@@ -1,5 +1,30 @@
 {
-  "dependencies": {
-    "multer": "^2.2.0"
+  "name": "nursenourish",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NurseNourish - Healthcare e-commerce platform",
+  "packageManager": "npm@10.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "globals": "^15.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.4.0",
+    "turbo": "^2.5.0",
+    "typescript-eslint": "^8.0.0"
   }
 }
+
