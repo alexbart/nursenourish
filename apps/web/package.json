@@ -1,0 +1,25 @@
+{
+  "name": "@nursenourish/web",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "echo \"Web app placeholder - implement React frontend here\"",
+    "build": "echo \"Web app placeholder\"",
+    "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint src --ext .ts,.tsx,.js,.jsx --fix"
+  },
+  "type": "module",
+  "dependencies": {
+    "@nursenourish/shared": "*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@nursenourish/eslint-config": "*",
+    "@nursenourish/tsconfig": "*",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "^6.0.3",
+    "vite": "^6.0.0"
+  }
+}

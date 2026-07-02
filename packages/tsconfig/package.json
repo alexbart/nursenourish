@@ -1,0 +1,9 @@
+{
+  "name": "@nursenourish/tsconfig",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./base.json",
+    "./base": "./base.json",
+    "./node18": "./node18.json"
+  }
+}
