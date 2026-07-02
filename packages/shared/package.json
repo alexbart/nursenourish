@@ -1,0 +1,30 @@
+{
+  "name": "@nursenourish/shared",
+  "version": "0.1.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types/index.ts",
+    "./schemas": "./src/schemas/index.ts",
+    "./constants": "./src/constants/index.ts",
+    "./constants/error-codes": "./src/constants/error-codes.ts",
+    "./constants/product-status": "./src/constants/product-status.ts",
+    "./constants/roles": "./src/constants/roles.ts",
+    "./dto": "./src/dto/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix"
+  },
+  "files": [
+    "src"
+  ],
+  "dependencies": {
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@nursenourish/eslint-config": "*",
+    "typescript": "^6.0.3"
+  }
+}
