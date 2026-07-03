@@ -1,6 +1,13 @@
 import { Link } from "react-router-dom";
+import { useProducts, useCategories } from "@/hooks";
 
 export function HomePage() {
+  const { data: products = [], isLoading: productsLoading } = useProducts({
+    featured: "true",
+    limit: "8",
+  });
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -47,24 +54,30 @@ export function HomePage() {
           <h2 className="font-heading font-bold text-3xl text-center text-primary mb-12">
             Shop by Category
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {["Vitamins", "Sports", "Women's Health", "Men's Health"].map(
-              (category) => (
+          {categoriesLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-32 bg-surface rounded-2xl animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {categories.map((category: any) => (
                 <Link
-                  key={category}
-                  to={`/shop?category=${category.toLowerCase()}`}
+                  key={category.id}
+                  to={`/shop?category=${category.slug}`}
                   className="group"
                 >
                   <div className="bg-surface rounded-2xl p-6 text-center border border-border hover:shadow-lg transition-all group-hover:-translate-y-1">
                     <div className="w-16 h-16 bg-secondary/20 rounded-full mx-auto mb-4" />
                     <h3 className="font-heading font-semibold text-lg text-primary">
-                      {category}
+                      {category.name}
                     </h3>
                   </div>
                 </Link>
-              )
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -74,27 +87,42 @@ export function HomePage() {
           <h2 className="font-heading font-bold text-3xl text-center text-primary mb-12">
             Featured Products
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-background rounded-2xl overflow-hidden border border-border shadow-sm hover:shadow-md transition">
-                <div className="h-48 bg-secondary/10" />
-                <div className="p-6">
-                  <h3 className="font-heading font-semibold text-xl text-primary mb-2">
-                    Product {i}
-                  </h3>
-                  <p className="text-muted mb-4">Premium supplement for your health</p>
-                  <div className="flex items-center justify-between">
-                    <span className="font-heading font-bold text-2xl text-accent">
-                      KES 2,850
-                    </span>
-                    <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition">
-                      Add to Cart
-                    </button>
+          {productsLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-80 bg-background rounded-2xl animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {products.map((product: any) => (
+                <div
+                  key={product.id}
+                  className="bg-background rounded-2xl overflow-hidden border border-border shadow-sm hover:shadow-md transition"
+                >
+                  <img
+                    src={product.images?.[0]?.imageUrl || "/hero.jpg"}
+                    alt={product.name}
+                    className="h-48 w-full object-cover"
+                  />
+                  <div className="p-6">
+                    <h3 className="font-heading font-semibold text-xl text-primary mb-2">
+                      {product.name}
+                    </h3>
+                    <p className="text-muted mb-4">{product.brand?.name}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="font-heading font-bold text-2xl text-accent">
+                        KES {product.price?.toLocaleString()}
+                      </span>
+                      <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition">
+                        Add to Cart
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>
