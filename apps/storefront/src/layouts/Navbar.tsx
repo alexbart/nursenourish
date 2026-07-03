@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { SearchBar } from "@/components/search/SearchBar";
 
 export function Navbar() {
   return (
@@ -28,10 +29,7 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center space-x-4">
-            <button className="p-2 text-text hover:text-primary transition">
-              <span className="sr-only">Search</span>
-              🔍
-            </button>
+            <SearchBar />
             <button className="p-2 text-text hover:text-primary transition">
               <span className="sr-only">Cart</span>
               🛒
