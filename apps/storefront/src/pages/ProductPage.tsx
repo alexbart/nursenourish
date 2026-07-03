@@ -4,6 +4,8 @@ import { useProduct, useProducts } from "@/hooks";
 import { ProductCardSkeleton } from "@/components/skeleton/Skeleton";
 import { ErrorState } from "@/components/feedback/ErrorState";
 import { Button } from "@/components/Button";
+import { useCartStore } from "@/features/cart/store/cart.store";
+import { toast } from "react-hot-toast";
 
 export function ProductPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -21,6 +23,25 @@ export function ProductPage() {
   });
 
   const filteredRelated = relatedProducts.filter((p: any) => p.id !== product?.id);
+  const addItem = useCartStore((state) => state.addItem);
+
+  const handleAddToCart = () => {
+    if (!product) return;
+
+    const imageUrl = product.images?.[0]?.imageUrl || "/hero.jpg";
+    addItem({
+      id: product.id,
+      productId: product.id,
+      name: product.name,
+      slug: product.slug,
+      price: product.price,
+      salePrice: product.salePrice,
+      image: imageUrl,
+      quantity: 1,
+      maxQuantity: product.inventory?.quantity || 99,
+    });
+    toast.success("Added to cart");
+  };
 
   if (isError) {
     return (
@@ -155,7 +176,11 @@ export function ProductPage() {
                 )}
               </div>
 
-              <Button className="w-full lg:w-auto" disabled={!product.inventory?.quantity}>
+              <Button
+                className="w-full lg:w-auto"
+                disabled={!product.inventory?.quantity}
+                onClick={handleAddToCart}
+              >
                 Add to Cart
               </Button>
             </div>
