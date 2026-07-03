@@ -1,11 +1,12 @@
 import { prisma } from "../../prisma/prisma.js";
-import { productRepository, ProductSearchCriteria } from "./product.repository.js";
+import { productRepository } from "./product.repository.js";
 import { toProductDto } from "./product.mapper.js";
 import { storageService } from "../../services/storage/index.js";
 import { ApiError } from "../../shared/ApiError.js";
 import { ErrorCodes, HttpStatus } from "@nursenourish/shared";
 import type { CreateProductInput } from "./product.validator.js";
 import type { ProductResponseDto } from "@nursenourish/shared/dto/product.dto.js";
+import type { ProductQuery } from "./product.types.js";
 
 export class ProductService {
   async create(data: CreateProductInput): Promise<ProductResponseDto> {
@@ -56,7 +57,7 @@ export class ProductService {
     });
   }
 
-  async search(criteria: ProductSearchCriteria) {
+  async search(criteria: ProductQuery) {
     const result = await productRepository.search(criteria);
     return {
       products: result.products.map(toProductDto),

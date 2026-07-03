@@ -10,7 +10,7 @@ export type ProductWithRelations = Awaited<ReturnType<typeof prisma.product.find
     images: true;
     inventory: true;
   };
-}>>;
+}>>>;
 
 export interface ProductSearchCriteria extends ProductQuery {
   sortBy?: "name" | "price" | "createdAt";
