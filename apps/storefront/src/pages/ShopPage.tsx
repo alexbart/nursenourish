@@ -44,7 +44,7 @@ export function CategoryFilter() {
 export function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { data, isLoading, isError, refetch } = useProducts({
+  const { data = { data: [], pagination: { pages: 0 } }, isLoading, isError, refetch } = useProducts({
     page: searchParams.get("page") || "1",
     limit: searchParams.get("limit") || "20",
     search: searchParams.get("q") || undefined,

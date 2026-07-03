@@ -149,7 +149,7 @@ export class ProductRepository {
     }
 
     if (criteria.featured !== undefined) {
-      where.featured = criteria.featured;
+      where.featured = criteria.featured === true || criteria.featured === "true";
     }
 
     if (criteria.category) {
