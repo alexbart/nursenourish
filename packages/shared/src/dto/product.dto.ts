@@ -59,6 +59,7 @@ export interface CreateProductDto {
   ingredients?: string;
   usageInstructions?: string;
   warnings?: string;
+  packSize?: string;
   price: number;
   salePrice?: number;
   categoryId: string;
