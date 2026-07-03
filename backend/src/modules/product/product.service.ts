@@ -1,18 +1,14 @@
-import slugify from "slugify";
-
 import { prisma } from "../../prisma/prisma.js";
-import { ApiError } from "../../shared/ApiError.js";
-import { productRepository } from "./product.repository.js";
+import { productRepository, ProductSearchCriteria } from "./product.repository.js";
 import { toProductDto } from "./product.mapper.js";
 import { storageService } from "../../services/storage/index.js";
+import { ApiError } from "../../shared/ApiError.js";
 import { ErrorCodes, HttpStatus } from "@nursenourish/shared";
-
-import type { ProductQuery } from "./product.types.js";
 import type { CreateProductInput } from "./product.validator.js";
 import type { ProductResponseDto } from "@nursenourish/shared/dto/product.dto.js";
 
 export class ProductService {
-  async createProduct(data: CreateProductInput): Promise<ProductResponseDto> {
+  async create(data: CreateProductInput): Promise<ProductResponseDto> {
     return prisma.$transaction(async (tx) => {
       const category = await tx.category.findUnique({
         where: { id: data.categoryId },
@@ -22,7 +18,7 @@ export class ProductService {
         throw new ApiError(
           HttpStatus.NOT_FOUND,
           ErrorCodes.CATEGORY_NOT_FOUND,
-          "Category not found"
+          "Category not found."
         );
       }
 
@@ -34,90 +30,93 @@ export class ProductService {
         throw new ApiError(
           HttpStatus.NOT_FOUND,
           ErrorCodes.BRAND_NOT_FOUND,
-          "Brand not found"
+          "Brand not found."
         );
       }
 
-      const slug = slugify(data.name, { lower: true, strict: true });
-
-      const existingProduct = await tx.product.findUnique({ where: { slug } });
-      if (existingProduct) {
-        throw new ApiError(
-          HttpStatus.CONFLICT,
-          ErrorCodes.PRODUCT_ALREADY_EXISTS,
-          "Product already exists"
-        );
+      if (data.sku) {
+        const existingSku = await tx.product.findUnique({
+          where: { sku: data.sku.trim() },
+        });
+        if (existingSku) {
+          throw new ApiError(
+            HttpStatus.CONFLICT,
+            ErrorCodes.BAD_REQUEST,
+            "Product SKU already exists."
+          );
+        }
       }
 
-      let sku = data.sku?.trim() ?? this.generateSku();
-
-      const existingSku = await tx.product.findUnique({ where: { sku } });
-      if (existingSku) {
-        throw new ApiError(
-          HttpStatus.CONFLICT,
-          ErrorCodes.BAD_REQUEST,
-          "Product SKU already exists"
-        );
-      }
-
-      const product = await tx.product.create({
-        data: {
-          name: data.name,
-          slug,
-          sku,
-          description: data.description ?? null,
-          ingredients: data.ingredients ?? null,
-          usageInstructions: data.usageInstructions ?? null,
-          warnings: data.warnings ?? null,
-          price: data.price,
-          salePrice: data.salePrice ?? null,
-          featured: data.featured ?? false,
-          prescriptionRequired: data.prescriptionRequired ?? false,
-          categoryId: data.categoryId,
-          brandId: data.brandId,
-          images: {
-            create: data.images?.map((image) => ({ imageUrl: image.imageUrl })) ?? [],
-          },
-        },
-        include: { category: true, brand: true, images: true, inventory: true },
-      });
+      const product = await productRepository.create(data, tx);
 
       await tx.inventory.create({
-        data: { productId: product.id, quantity: 0 },
+        data: { productId: product.id, quantity: 0, reservedQuantity: 0 },
       });
 
       return toProductDto(product);
     });
   }
 
-  async getProducts(query: ProductQuery) {
-    const result = await productRepository.findMany(query);
+  async search(criteria: ProductSearchCriteria) {
+    const result = await productRepository.search(criteria);
     return {
       products: result.products.map(toProductDto),
       pagination: result.pagination,
     };
   }
 
-  async getProductBySlug(slug: string): Promise<ProductResponseDto> {
-    const product = await productRepository.findBySlug(slug);
+  async findById(id: string): Promise<ProductResponseDto> {
+    const product = await productRepository.findById(id);
     if (!product) {
       throw new ApiError(
         HttpStatus.NOT_FOUND,
         ErrorCodes.PRODUCT_NOT_FOUND,
-        "Product not found"
+        "Product not found."
       );
     }
     return toProductDto(product);
   }
 
-  async uploadProductImage(file: Express.Multer.File) {
-    return storageService.upload(file);
+  async findBySlug(slug: string): Promise<ProductResponseDto> {
+    const product = await productRepository.findBySlug(slug);
+    if (!product) {
+      throw new ApiError(
+        HttpStatus.NOT_FOUND,
+        ErrorCodes.PRODUCT_NOT_FOUND,
+        "Product not found."
+      );
+    }
+    return toProductDto(product);
   }
 
-  private generateSku(): string {
-    const ts = Date.now().toString(36).toUpperCase();
-    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `SKU-${ts}-${rand}`;
+  async update(id: string, data: Partial<CreateProductInput>): Promise<ProductResponseDto> {
+    const product = await productRepository.findById(id);
+    if (!product) {
+      throw new ApiError(
+        HttpStatus.NOT_FOUND,
+        ErrorCodes.PRODUCT_NOT_FOUND,
+        "Product not found."
+      );
+    }
+
+    const updated = await productRepository.update(id, data);
+    return toProductDto(updated);
+  }
+
+  async delete(id: string): Promise<void> {
+    const product = await productRepository.findById(id);
+    if (!product) {
+      throw new ApiError(
+        HttpStatus.NOT_FOUND,
+        ErrorCodes.PRODUCT_NOT_FOUND,
+        "Product not found."
+      );
+    }
+    await productRepository.delete(id);
+  }
+
+  async uploadImage(file: Express.Multer.File) {
+    return storageService.upload(file);
   }
 }
 

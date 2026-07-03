@@ -13,6 +13,21 @@ export interface CategorySummaryDto {
 export interface ProductImageDto {
   id: string;
   imageUrl: string;
+  altText?: string | null;
+  sortOrder?: number;
+  isPrimary?: boolean;
+}
+
+export interface ProductSummaryDto {
+  id: string;
+  name: string;
+  slug: string;
+  sku: string;
+  price: number;
+  salePrice: number | null;
+  thumbnail: string | null;
+  brand: BrandSummaryDto;
+  category: CategorySummaryDto;
 }
 
 export interface ProductResponseDto {
@@ -50,7 +65,7 @@ export interface CreateProductDto {
   brandId: string;
   featured?: boolean;
   prescriptionRequired?: boolean;
-  images?: Array<{ imageUrl: string }>;
+  images?: Array<{ imageUrl: string; altText?: string }>;
   sku?: string;
 }
 
@@ -66,5 +81,5 @@ export interface UpdateProductDto {
   brandId?: string;
   featured?: boolean;
   prescriptionRequired?: boolean;
-  images?: Array<{ imageUrl: string }>;
+  images?: Array<{ imageUrl: string; altText?: string }>;
 }

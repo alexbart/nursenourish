@@ -1,6 +1,7 @@
 import { prisma } from "../../prisma/prisma.js";
+import { createSlug } from "../../shared/utils/slug.js";
 import type { ProductQuery } from "./product.types.js";
-import type { CreateProductDto, ProductResponseDto } from "@nursenourish/shared/dto/product.dto.js";
+import type { CreateProductDto } from "@nursenourish/shared/dto/product.dto.js";
 
 export type ProductWithRelations = Awaited<ReturnType<typeof prisma.product.findUnique<{
   include: {
@@ -9,15 +10,21 @@ export type ProductWithRelations = Awaited<ReturnType<typeof prisma.product.find
     images: true;
     inventory: true;
   };
-}>>>;
+}>>;
+
+export interface ProductSearchCriteria extends ProductQuery {
+  sortBy?: "name" | "price" | "createdAt";
+  order?: "asc" | "desc";
+}
 
 export class ProductRepository {
-  async create(data: CreateProductDto): Promise<ProductWithRelations> {
-    return prisma.product.create({
+  async create(data: CreateProductDto, tx?: typeof prisma) {
+    const client = tx || prisma;
+    return client.product.create({
       data: {
         name: data.name,
-        slug: this.generateSlug(data.name),
-        sku: data.sku ?? this.generateSku(),
+        slug: await this.generateUniqueSlug(data.name, tx),
+        sku: data.sku ?? await this.generateSKU(data),
         description: data.description ?? null,
         ingredients: data.ingredients ?? null,
         usageInstructions: data.usageInstructions ?? null,
@@ -43,12 +50,13 @@ export class ProductRepository {
     });
   }
 
-  async update(id: string, data: Partial<CreateProductDto>): Promise<ProductWithRelations> {
-    return prisma.product.update({
+  async update(id: string, data: Partial<CreateProductDto>, tx?: typeof prisma) {
+    const client = tx || prisma;
+    return client.product.update({
       where: { id },
       data: {
         name: data.name,
-        slug: data.name ? this.generateSlug(data.name) : undefined,
+        slug: data.name ? await this.generateUniqueSlug(data.name, tx) : undefined,
         sku: data.sku,
         description: data.description,
         ingredients: data.ingredients,
@@ -75,14 +83,16 @@ export class ProductRepository {
     });
   }
 
-  async delete(id: string): Promise<void> {
-    await prisma.product.delete({
+  async delete(id: string, tx?: typeof prisma) {
+    const client = tx || prisma;
+    return client.product.delete({
       where: { id },
     });
   }
 
-  async findById(id: string): Promise<ProductWithRelations | null> {
-    return prisma.product.findUnique({
+  async findById(id: string, tx?: typeof prisma) {
+    const client = tx || prisma;
+    return client.product.findUnique({
       where: { id },
       include: {
         category: true,
@@ -93,8 +103,9 @@ export class ProductRepository {
     });
   }
 
-  async findBySlug(slug: string): Promise<ProductWithRelations | null> {
-    return prisma.product.findUnique({
+  async findBySlug(slug: string, tx?: typeof prisma) {
+    const client = tx || prisma;
+    return client.product.findUnique({
       where: { slug },
       include: {
         category: true,
@@ -105,8 +116,9 @@ export class ProductRepository {
     });
   }
 
-  async findBySku(sku: string): Promise<ProductWithRelations | null> {
-    return prisma.product.findUnique({
+  async findBySku(sku: string, tx?: typeof prisma) {
+    const client = tx || prisma;
+    return client.product.findUnique({
       where: { sku },
       include: {
         category: true,
@@ -117,54 +129,56 @@ export class ProductRepository {
     });
   }
 
-  async findMany(query: ProductQuery) {
-    const page = Number(query.page) || 1;
-    const limit = Number(query.limit) || 20;
+  async search(criteria: ProductSearchCriteria) {
+    const page = Number(criteria.page) || 1;
+    const limit = Number(criteria.limit) || 20;
     const skip = (page - 1) * limit;
 
     const where: any = {};
 
-    if (query.search) {
+    if (criteria.search) {
       where.OR = [
-        { name: { contains: query.search, mode: "insensitive" } },
-        { brand: { name: { contains: query.search, mode: "insensitive" } } },
-        { category: { name: { contains: query.search, mode: "insensitive" } } },
+        { name: { contains: criteria.search, mode: "insensitive" } },
+        { brand: { name: { contains: criteria.search, mode: "insensitive" } } },
+        { category: { name: { contains: criteria.search, mode: "insensitive" } } },
       ];
     }
 
-    if (query.sku) {
-      where.sku = { contains: query.sku, mode: "insensitive" };
+    if (criteria.sku) {
+      where.sku = { contains: criteria.sku, mode: "insensitive" };
     }
 
-    if (query.featured !== undefined) {
-      where.featured = query.featured;
+    if (criteria.featured !== undefined) {
+      where.featured = criteria.featured;
     }
 
-    if (query.category) {
-      where.category = { slug: query.category };
+    if (criteria.category) {
+      where.category = { slug: criteria.category };
     }
 
-    if (query.brand) {
-      where.brand = { slug: query.brand };
+    if (criteria.brand) {
+      where.brand = { slug: criteria.brand };
     }
 
-    if (query.minPrice !== undefined || query.maxPrice !== undefined) {
+    if (criteria.minPrice !== undefined || criteria.maxPrice !== undefined) {
       where.price = {};
-      if (query.minPrice !== undefined) where.price.gte = query.minPrice;
-      if (query.maxPrice !== undefined) where.price.lte = query.maxPrice;
+      if (criteria.minPrice !== undefined) where.price.gte = criteria.minPrice;
+      if (criteria.maxPrice !== undefined) where.price.lte = criteria.maxPrice;
     }
 
-    if (query.inStock) {
+    if (criteria.inStock) {
       where.inventory = { quantity: { gt: 0 } };
     }
 
-    if (query.prescriptionRequired !== undefined) {
-      where.prescriptionRequired = query.prescriptionRequired;
+    if (criteria.prescriptionRequired !== undefined) {
+      where.prescriptionRequired = criteria.prescriptionRequired;
     }
 
     let orderBy: any = { createdAt: "desc" };
-    if (query.sortBy === "price_asc") orderBy = { price: "asc" };
-    else if (query.sortBy === "price_desc") orderBy = { price: "desc" };
+    if (criteria.sortBy === "price" && criteria.order === "asc") orderBy = { price: "asc" };
+    else if (criteria.sortBy === "price" && criteria.order === "desc") orderBy = { price: "desc" };
+    else if (criteria.sortBy === "name" && criteria.order === "asc") orderBy = { name: "asc" };
+    else if (criteria.sortBy === "name" && criteria.order === "desc") orderBy = { name: "desc" };
 
     const [products, total] = await Promise.all([
       prisma.product.findMany({
@@ -188,14 +202,30 @@ export class ProductRepository {
     };
   }
 
-  private generateSku(): string {
-    const ts = Date.now().toString(36).toUpperCase();
-    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `SKU-${ts}-${rand}`;
+  private async generateUniqueSlug(name: string, tx?: typeof prisma): Promise<string> {
+    const baseSlug = createSlug(name);
+    const client = tx || prisma;
+    let slug = baseSlug;
+    let counter = 1;
+
+    while (await client.product.count({ where: { slug } }) > 0) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    return slug;
   }
 
-  private generateSlug(name: string): string {
-    return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  private async generateSKU(data: CreateProductDto): Promise<string> {
+    const category = await prisma.category.findUnique({
+      where: { id: data.categoryId },
+    });
+
+    const prefix = category?.name.substring(0, 3).toUpperCase() || "PRD";
+    const count = await prisma.product.count();
+    const number = String(count + 1).padStart(6, "0");
+
+    return `NN-${prefix}-${number}`;
   }
 }
 
