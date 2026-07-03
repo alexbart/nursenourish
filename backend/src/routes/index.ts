@@ -5,6 +5,7 @@ import brandRoutes from "../modules/brand/brand.routes.js"
 import productRoutes from "../modules/product/product.routes.js"
 import stockMovementRoutes from "../modules/stock-movement/stock-movement.routes.js"
 import authRoutes from "../modules/auth/routes.js"
+import orderRoutes from "../modules/order/routes.js"
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use("/brands", brandRoutes);
 router.use("/products", productRoutes);
 router.use("/stock-movements", stockMovementRoutes);
 router.use("/auth", authRoutes);
+router.use("/orders", orderRoutes);
 
 export default router;
