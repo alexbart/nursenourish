@@ -48,7 +48,6 @@ export class ProductService {
       }
 
       const product = await productRepository.create(data, tx);
-
       await tx.inventory.create({
         data: { productId: product.id, quantity: 0, reservedQuantity: 0 },
       });
@@ -65,18 +64,6 @@ export class ProductService {
     };
   }
 
-  async findById(id: string): Promise<ProductResponseDto> {
-    const product = await productRepository.findById(id);
-    if (!product) {
-      throw new ApiError(
-        HttpStatus.NOT_FOUND,
-        ErrorCodes.PRODUCT_NOT_FOUND,
-        "Product not found."
-      );
-    }
-    return toProductDto(product);
-  }
-
   async findBySlug(slug: string): Promise<ProductResponseDto> {
     const product = await productRepository.findBySlug(slug);
     if (!product) {
@@ -87,6 +74,19 @@ export class ProductService {
       );
     }
     return toProductDto(product);
+  }
+
+  async getRelated(productId: string, categoryId: string): Promise<ProductResponseDto[]> {
+    const products = await prisma.product.findMany({
+      where: {
+        categoryId,
+        id: { not: productId },
+        status: "ACTIVE",
+      },
+      include: { category: true, brand: true, images: true, inventory: true },
+      take: 4,
+    });
+    return products.map(toProductDto);
   }
 
   async update(id: string, data: Partial<CreateProductInput>): Promise<ProductResponseDto> {
