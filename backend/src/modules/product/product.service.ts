@@ -12,7 +12,7 @@ import type { CreateProductInput } from "./product.validator.js";
 import type { ProductResponseDto } from "@nursenourish/shared/dto/product.dto.js";
 
 export class ProductService {
-  async createProduct(data: CreateProductDto): Promise<ProductResponseDto> {
+  async createProduct(data: CreateProductInput): Promise<ProductResponseDto> {
     return prisma.$transaction(async (tx) => {
       const category = await tx.category.findUnique({
         where: { id: data.categoryId },
