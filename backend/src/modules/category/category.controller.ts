@@ -1,72 +1,81 @@
 import type { Request, Response } from "express";
 
 import { asyncHandler } from "../../shared/asyncHandler.js";
-import { apiResponse } from "../../shared/apiResponse.js";
+import { HttpStatus } from "@nursenourish/shared";
 
 import { categoryService } from "./category.service.js";
-import { createCategorySchema } from "./category.validator.js";
+import { createCategorySchema, updateCategorySchema } from "./category.validator.js";
 
-export const createCategory =
-  asyncHandler(async (req, res) => {
-    const validatedData =
-      createCategorySchema.parse(req.body);
+export const create = asyncHandler(async (req, res) => {
+  const validatedData = createCategorySchema.parse(req.body);
+  const category = await categoryService.create(validatedData);
 
-    const category =
-      await categoryService.createCategory(
-        validatedData
-      );
-
-    res.status(201).json(
-      apiResponse(
-        "Category created successfully",
-        category
-      )
-    );
+  res.status(HttpStatus.CREATED).json({
+    data: category,
   });
+});
 
-export const getCategories =
-  asyncHandler(async (_req, res) => {
-    const categories =
-      await categoryService.getAllCategories();
+export const getAll = asyncHandler(async (_req, res) => {
+  const categories = await categoryService.findAll();
 
-    res.status(200).json(
-      apiResponse(
-        "Categories fetched successfully",
-        categories
-      )
-    );
+  res.status(HttpStatus.OK).json({
+    data: categories,
   });
+});
 
-export const getCategoryById =
-  asyncHandler(async (req, res) => {
-    const id = req.params.id;
-    if (!id || Array.isArray(id)) {
-      throw new Error("Invalid category id");
-    }
+export const getOne = asyncHandler(async (req, res) => {
+  const id = req.params.id;
 
-    const category =
-      await categoryService.getCategoryById(id);
+  if (!id || Array.isArray(id)) {
+    throw new Error("Invalid category id");
+  }
 
-    res.status(200).json(
-      apiResponse(
-        "Category fetched successfully",
-        category
-      )
-    );
+  const category = await categoryService.findById(id);
+
+  res.status(HttpStatus.OK).json({
+    data: category,
   });
+});
 
-export const deleteCategory =
-  asyncHandler(async (req, res) => {
-    const id = req.params.id;
-    if (!id || Array.isArray(id)) {
-      throw new Error("Invalid category id");
-    }
+export const getBySlug = asyncHandler(async (req, res) => {
+  const slug = req.params.slug;
 
-    await categoryService.deleteCategory(id);
+  if (!slug || Array.isArray(slug)) {
+    throw new Error("Invalid category slug");
+  }
 
-    res.status(200).json(
-      apiResponse(
-        "Category deleted successfully"
-      )
-    );
+  const category = await categoryService.findBySlug(slug);
+
+  res.status(HttpStatus.OK).json({
+    data: category,
   });
+});
+
+export const update = asyncHandler(async (req, res) => {
+  const id = req.params.id;
+
+  if (!id || Array.isArray(id)) {
+    throw new Error("Invalid category id");
+  }
+
+  const validatedData = updateCategorySchema.parse(req.body);
+  const category = await categoryService.update(id, validatedData);
+
+  res.status(HttpStatus.OK).json({
+    data: category,
+  });
+});
+
+export const remove = asyncHandler(async (req, res) => {
+  const id = req.params.id;
+
+  if (!id || Array.isArray(id)) {
+    throw new Error("Invalid category id");
+  }
+
+  await categoryService.delete(id);
+
+  res.status(HttpStatus.OK).json({
+    message: "Category deleted successfully",
+  });
+});

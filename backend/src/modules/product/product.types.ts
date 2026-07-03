@@ -19,5 +19,6 @@ export interface ProductQuery {
 
   prescriptionRequired?: boolean;
 
-  sortBy?: "newest" | "price_asc" | "price_desc";
+  sortBy?: "createdAt" | "name" | "price";
+  order?: "asc" | "desc";
 }

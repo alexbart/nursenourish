@@ -146,6 +146,8 @@ model Product {
 
   warnings String?
 
+  packSize String?
+
   price Decimal @db.Decimal(10, 2)
 
   salePrice Decimal? @db.Decimal(10, 2)
@@ -195,6 +197,8 @@ model Inventory {
   productId String @unique
 
   quantity Int @default(0)
+
+  reservedQuantity Int @default(0)
 
   reorderLevel Int @default(5)
 

@@ -1,21 +1,27 @@
 import { Router } from "express";
 
 import {
-  createProduct,
-  getProductBySlug,
-  getProducts,
-  uploadProductImage,
+  create,
+  search,
+  getOne,
+  update,
+  remove,
+  uploadImage,
   uploadImageMiddleware,
 } from "./product.controller.js";
 
 const router = Router();
 
-router.post("/", createProduct);
+router.post("/", create);
 
-router.get("/", getProducts);
+router.get("/", search);
 
-router.get("/:slug", getProductBySlug);
+router.get("/:slug", getOne);
 
-router.post("/upload-image", uploadImageMiddleware, uploadProductImage);
+router.patch("/:id", update);
+
+router.delete("/:id", remove);
+
+router.post("/upload-image", uploadImageMiddleware, uploadImage);
 
 export default router;
