@@ -1,43 +1,67 @@
 import type { Request, Response } from "express";
 
 import { asyncHandler } from "../../shared/asyncHandler.js";
-import { apiResponse } from "../../shared/apiResponse.js";
+import { HttpStatus } from "@nursenourish/shared";
 
 import { brandService } from "./brand.service.js";
-import { createBrandSchema } from "./brand.validator.js";
+import { createBrandSchema, updateBrandSchema } from "./brand.validator.js";
 
-export const createBrand = asyncHandler(async (req, res) => {
+export const create = asyncHandler(async (req, res) => {
   const validatedData = createBrandSchema.parse(req.body);
+  const brand = await brandService.create(validatedData);
 
-  const brand = await brandService.createBrand(validatedData);
-
-  res.status(201).json(apiResponse("Brand created successfully", brand));
+  res.status(HttpStatus.CREATED).json({
+    data: brand,
+  });
 });
 
-export const getBrands = asyncHandler(async (_req, res) => {
-  const brands = await brandService.getAllBrands();
+export const getAll = asyncHandler(async (_req, res) => {
+  const brands = await brandService.findAll();
 
-  res.status(200).json(apiResponse("Brands fetched successfully", brands));
+  res.status(HttpStatus.OK).json({
+    data: brands,
+  });
 });
 
-export const getBrandById = asyncHandler(async (req, res) => {
+export const getOne = asyncHandler(async (req, res) => {
   const id = req.params.id;
+
   if (!id || Array.isArray(id)) {
     throw new Error("Invalid brand id");
   }
 
-  const brand = await brandService.getBrandById(id);
+  const brand = await brandService.findById(id);
 
-  res.status(200).json(apiResponse("Brand fetched successfully", brand));
+  res.status(HttpStatus.OK).json({
+    data: brand,
+  });
 });
 
-export const deleteBrand = asyncHandler(async (req, res) => {
+export const update = asyncHandler(async (req, res) => {
   const id = req.params.id;
+
   if (!id || Array.isArray(id)) {
     throw new Error("Invalid brand id");
   }
 
-  await brandService.deleteBrand(id);
+  const validatedData = updateBrandSchema.parse(req.body);
+  const brand = await brandService.update(id, validatedData);
 
-  res.status(200).json(apiResponse("Brand deleted successfully"));
+  res.status(HttpStatus.OK).json({
+    data: brand,
+  });
+});
+
+export const remove = asyncHandler(async (req, res) => {
+  const id = req.params.id;
+
+  if (!id || Array.isArray(id)) {
+    throw new Error("Invalid brand id");
+  }
+
+  await brandService.delete(id);
+
+  res.status(HttpStatus.OK).json({
+    message: "Brand deleted successfully",
+  });
 });

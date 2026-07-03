@@ -1,76 +1,93 @@
-import slugify from "slugify";
-
-import { prisma } from "../../prisma/prisma.js";
+import { brandRepository } from "./brand.repository.js";
+import { toBrandDto } from "./brand.mapper.js";
 import { ApiError } from "../../shared/ApiError.js";
 import { ErrorCodes, HttpStatus } from "@nursenourish/shared";
-import type { CreateBrandInput } from "./brand.validator.js";
+import type { CreateBrandInput, UpdateBrandInput } from "./brand.validator.js";
+import type { BrandResponseDto } from "@nursenourish/shared/dto/brand.dto.js";
 
 export class BrandService {
-  async createBrand(data: CreateBrandInput) {
-    const slug = slugify(data.name, {
-      lower: true,
-      strict: true,
-    });
-
-    const existingBrand = await prisma.brand.findUnique({
-      where: {
-        slug,
-      },
-    });
-
-    if (existingBrand) {
-      throw new ApiError(HttpStatus.CONFLICT, ErrorCodes.BRAND_ALREADY_EXISTS, "Brand already exists");
+  async create(data: CreateBrandInput): Promise<BrandResponseDto> {
+    const slug = this.generateSlug(data.name);
+    
+    const exists = await brandRepository.existsBySlug(slug);
+    if (exists) {
+      throw new ApiError(
+        HttpStatus.CONFLICT,
+        ErrorCodes.BRAND_ALREADY_EXISTS,
+        "Brand already exists."
+      );
     }
 
-    return prisma.brand.create({
-      data: {
-        name: data.name,
-        slug,
-        description: data.description ?? null,
-      },
+    const brand = await brandRepository.create({
+      name: data.name,
+      description: data.description,
     });
+
+    return toBrandDto(brand);
   }
 
-  async getAllBrands() {
-    return prisma.brand.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+  async findAll() {
+    const brands = await brandRepository.findAll();
+    return brands.map(toBrandDto);
   }
 
-  async getBrandById(id: string) {
-    const brand = await prisma.brand.findUnique({
-      where: {
-        id,
-      },
-    });
+  async findById(id: string): Promise<BrandResponseDto> {
+    const brand = await brandRepository.findById(id);
 
     if (!brand) {
-      throw new ApiError(HttpStatus.NOT_FOUND, ErrorCodes.BRAND_NOT_FOUND, "Brand not found");
+      throw new ApiError(
+        HttpStatus.NOT_FOUND,
+        ErrorCodes.BRAND_NOT_FOUND,
+        "Brand not found."
+      );
     }
 
-    return brand;
+    return toBrandDto(brand);
   }
 
-  async deleteBrand(id: string) {
-    const brand = await prisma.brand.findUnique({
-      where: {
-        id,
-      },
-    });
+  async update(id: string, data: UpdateBrandInput): Promise<BrandResponseDto> {
+    const brand = await brandRepository.findById(id);
 
     if (!brand) {
-      throw new ApiError(HttpStatus.NOT_FOUND, ErrorCodes.BRAND_NOT_FOUND, "Brand not found");
+      throw new ApiError(
+        HttpStatus.NOT_FOUND,
+        ErrorCodes.BRAND_NOT_FOUND,
+        "Brand not found."
+      );
     }
 
-    await prisma.brand.delete({
-      where: {
-        id,
-      },
-    });
+    if (data.name) {
+      const slug = this.generateSlug(data.name);
+      const exists = await brandRepository.existsBySlug(slug);
+      if (exists && slug !== brand.slug) {
+        throw new ApiError(
+          HttpStatus.CONFLICT,
+          ErrorCodes.BRAND_ALREADY_EXISTS,
+          "Brand already exists."
+        );
+      }
+    }
 
-    return true;
+    const updated = await brandRepository.update(id, data);
+    return toBrandDto(updated);
+  }
+
+  async delete(id: string): Promise<void> {
+    const brand = await brandRepository.findById(id);
+
+    if (!brand) {
+      throw new ApiError(
+        HttpStatus.NOT_FOUND,
+        ErrorCodes.BRAND_NOT_FOUND,
+        "Brand not found."
+      );
+    }
+
+    await brandRepository.delete(id);
+  }
+
+  private generateSlug(name: string): string {
+    return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
   }
 }
 
