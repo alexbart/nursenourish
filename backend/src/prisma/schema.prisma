@@ -46,6 +46,73 @@ enum PaymentStatus {
   REFUNDED
 }
 
+model Order {
+  id String @id @default(uuid())
+
+  userId String
+
+  status OrderStatus @default(PENDING)
+
+  subtotal Decimal @db.Decimal(10, 2)
+
+  total Decimal @db.Decimal(10, 2)
+
+  shippingAddress String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  items OrderItem[]
+
+  payment Payment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id String @id @default(uuid())
+
+  orderId String
+
+  productId String
+
+  name String
+
+  price Decimal @db.Decimal(10, 2)
+
+  quantity Int
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model Payment {
+  id String @id @default(uuid())
+
+  orderId String @unique
+
+  reference String
+
+  status PaymentStatus @default(PENDING)
+
+  amount Decimal @db.Decimal(10, 2)
+
+  method String?
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@map("payments")
+}
+
 enum CouponType {
   PERCENTAGE
   FIXED
@@ -67,6 +134,7 @@ model User {
   isActive Boolean @default(true)
 
   addresses Address[]
+  orders Order[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

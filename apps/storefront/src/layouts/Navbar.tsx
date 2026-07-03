@@ -1,7 +1,13 @@
 import { Link } from "react-router-dom";
+import { useCartStore } from "@/features/cart/store/cart.store";
+import { useAuthStore } from "@/features/auth/store/auth.store";
 import { SearchBar } from "@/components/search/SearchBar";
 
 export function Navbar() {
+  const totalItems = useCartStore((state) => state.totalItems());
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+
   return (
     <header className="bg-surface border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -30,10 +36,34 @@ export function Navbar() {
 
           <div className="flex items-center space-x-4">
             <SearchBar />
-            <button className="p-2 text-text hover:text-primary transition">
+            <Link
+              to="/cart"
+              className="relative p-2 text-text hover:text-primary transition"
+            >
               <span className="sr-only">Cart</span>
               🛒
-            </button>
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
+
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-primary">{user.firstName}</span>
+                <button
+                  onClick={logout}
+                  className="text-sm text-muted hover:text-primary"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link to="/login" className="text-sm text-text hover:text-primary transition">
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </div>
