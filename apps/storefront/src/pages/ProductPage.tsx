@@ -15,12 +15,12 @@ export function ProductPage() {
     refetch,
   } = useProduct(slug || "");
 
-  const { data: relatedData } = useProducts({
+  const { products: relatedProducts = [] } = useProducts({
     category: product?.category?.slug,
     limit: "4",
   });
 
-  const relatedProducts = relatedData?.data?.filter((p: any) => p.id !== product?.id) || [];
+  const filteredRelated = relatedProducts.filter((p: any) => p.id !== product?.id);
 
   if (isError) {
     return (
@@ -162,13 +162,13 @@ export function ProductPage() {
           </div>
 
           {/* Related Products */}
-          {relatedProducts.length > 0 && (
+          {filteredRelated.length > 0 && (
             <div className="mt-20">
               <h2 className="font-heading font-bold text-2xl text-primary mb-8">
                 Related Products
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {relatedProducts.map((related: any) => (
+                {filteredRelated.map((related: any) => (
                   <a
                     key={related.id}
                     href={`/product/${related.slug}`}

@@ -6,7 +6,11 @@ export function useProducts(params?: Record<string, string>, options?: UseQueryO
     queryKey: ["products", params],
     queryFn: async () => {
       const response = await getProducts(params);
-      return response.data;
+      const responseData = response.data;
+      return {
+        products: responseData?.data || [],
+        pagination: responseData?.pagination || { pages: 0 },
+      };
     },
     ...options,
   });
@@ -17,7 +21,7 @@ export function useProduct(slug: string, options?: UseQueryOptions) {
     queryKey: ["product", slug],
     queryFn: async () => {
       const response = await getProductBySlug(slug);
-      return response.data;
+      return response.data?.data;
     },
     ...options,
   });

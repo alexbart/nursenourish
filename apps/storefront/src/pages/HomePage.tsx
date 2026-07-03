@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useProducts, useCategories } from "@/hooks";
 
 export function HomePage() {
-  const { data: products = [], isLoading: productsLoading } = useProducts({
+  const { products = [], isLoading: productsLoading } = useProducts({
     featured: "true",
     limit: "8",
   });
