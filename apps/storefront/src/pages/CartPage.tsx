@@ -40,6 +40,7 @@ export function CartPage() {
                   <th className="text-left p-4 font-heading font-semibold text-primary">Product</th>
                   <th className="text-center p-4 font-heading font-semibold text-primary">Quantity</th>
                   <th className="text-right p-4 font-heading font-semibold text-primary">Price</th>
+                  <th className="text-center p-4 font-heading font-semibold text-primary">Remove</th>
                 </tr>
               </thead>
               <tbody>
@@ -77,6 +78,17 @@ export function CartPage() {
                     </td>
                     <td className="p-4 text-right font-heading font-bold text-primary">
                       KES {(item.price * item.quantity).toLocaleString()}
+                    </td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => {
+                          removeItem(item.productId);
+                          toast.success("Removed from cart");
+                        }}
+                        className="text-muted hover:text-red-500"
+                      >
+                        ✕
+                      </button>
                     </td>
                   </tr>
                 ))}
