@@ -2,11 +2,20 @@ import { Link } from "react-router-dom";
 import { useProducts, useCategories } from "@/hooks";
 
 export function HomePage() {
-  const { data: products = [], isLoading: productsLoading } = useProducts({
+  const { products = [], isLoading: productsLoading } = useProducts({
     featured: "true",
     limit: "8",
   });
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+
+  const healthGoals = [
+    { icon: "💪", label: "Build Muscle" },
+    { icon: "❤️", label: "Heart Health" },
+    { icon: "🛡️", label: "Immunity" },
+    { icon: "🧠", label: "Brain Health" },
+    { icon: "👶", label: "Kids' Nutrition" },
+    { icon: "🌿", label: "Digestive Health" },
+  ];
 
   return (
     <div className="min-h-screen">
@@ -44,6 +53,29 @@ export function HomePage() {
                 className="rounded-2xl shadow-2xl w-full h-auto"
               />
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Health Goals */}
+      <section className="py-16 bg-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="font-heading font-bold text-3xl text-center text-primary mb-12">
+            Shop by Health Goal
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {healthGoals.map((goal) => (
+              <Link
+                key={goal.label}
+                to={`/shop?goal=${encodeURIComponent(goal.label.toLowerCase())}`}
+                className="group bg-surface rounded-2xl p-6 text-center border border-border hover:shadow-lg transition-all group-hover:-translate-y-1"
+              >
+                <span className="text-3xl mb-3 block">{goal.icon}</span>
+                <span className="font-heading font-medium text-sm text-primary">
+                  {goal.label}
+                </span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -96,9 +128,10 @@ export function HomePage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {products.map((product: any) => (
-                <div
+                <a
                   key={product.id}
-                  className="bg-background rounded-2xl overflow-hidden border border-border shadow-sm hover:shadow-md transition"
+                  href={`/product/${product.slug}`}
+                  className="bg-background rounded-2xl overflow-hidden border border-border shadow-sm hover:shadow-md transition block"
                 >
                   <img
                     src={product.images?.[0]?.imageUrl || "/hero.jpg"}
@@ -119,7 +152,7 @@ export function HomePage() {
                       </button>
                     </div>
                   </div>
-                </div>
+                </a>
               ))}
             </div>
           )}
