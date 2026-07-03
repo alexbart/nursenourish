@@ -1,12 +1,8 @@
 import { prisma } from "../../prisma/prisma.js";
 import { createSlug } from "../../shared/utils/slug.js";
-import { log } from "./logger.js";
-import { readExcelFile } from "./excel-reader.js";
-import { validateRow } from "./row-validator.js";
-import { transformRowToDto } from "./transformer.js";
-import { printReport, type ImportReport } from "./report.js";
+import type { ImportReport } from "./report.js";
 
-export async function importCatalog(excelPath: string) {
+export async function importCatalog(excelPath: string): Promise<ImportReport> {
   const report: ImportReport = {
     totalRead: 0,
     imported: 0,
@@ -17,79 +13,100 @@ export async function importCatalog(excelPath: string) {
     errors: [],
   };
 
-  log("INFO", "Starting catalog import...");
+  console.log("📦 Starting catalog import...");
 
-  const rows = readExcelFile(excelPath);
-  report.totalRead = rows.length;
+  const XLSX = await import("xlsx");
+  const workbook = XLSX.readFile(excelPath);
+  const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+  const rawRows: any[] = XLSX.utils.sheet_to_json(worksheet);
+
+  report.totalRead = rawRows.length;
 
   const brand = await getOrCreateBrand();
   report.brandCreated = true;
 
-  const categories = new Map<string, string>();
-  for (const categoryName of getAllCategories(rows)) {
+  const categoryMap = new Map<string, string>();
+  const categorySet = new Set<string>();
+
+  for (const row of rawRows) {
+    const category = String(row["Category"] || "").trim();
+    if (category && !categoryMap.has(category)) {
+      categorySet.add(category);
+    }
+  }
+
+  for (const categoryName of categorySet) {
     const category = await getOrCreateCategory(categoryName);
-    categories.set(categoryName, category.id);
+    categoryMap.set(categoryName, category.id);
     if (category.justCreated) report.categoriesCreated++;
   }
 
-  for (const row of rows) {
-    const validated = validateRow(row);
-    if (!validated) {
-      report.failed++;
-      report.errors.push(`Invalid row: ${JSON.stringify(row)}`);
-      continue;
-    }
-
+  for (const row of rawRows) {
     try {
-      const categoryId = categories.get(validated.category);
+      const sku = String(row["SKU Code"] || "").trim();
+      const skuCode = row["SKU Code"] || "unknown";
+      const categoryName = String(row["Category"] || "").trim();
+      const productName = String(row["Product Name & Variant"] || "").trim();
+      const retailPrice = Number(row["Target Retail (KES)"] || 0);
+
+      if (!sku || !productName || !categoryName || retailPrice <= 0) {
+        report.failed++;
+        report.errors.push(`Invalid row: SKU=${skuCode}`);
+        continue;
+      }
+
+      const categoryId = categoryMap.get(categoryName);
       if (!categoryId) {
         report.failed++;
-        report.errors.push(`Category not found: ${validated.category}`);
+        report.errors.push(`Category not found: ${categoryName}`);
         continue;
       }
 
       const existing = await prisma.product.findUnique({
-        where: { sku: validated.sku },
+        where: { sku },
       });
 
       if (existing) {
         await prisma.product.update({
-          where: { sku: validated.sku },
+          where: { sku },
           data: {
-            name: validated.productName,
-            description: validated.ingredients || null,
-            packSize: validated.packSize || null,
-            price: validated.retailPrice,
+            name: productName,
+            description: String(row["Core Active Ingredients"] || "") || null,
+            packSize: String(row["Pack Size"] || "") || null,
+            price: retailPrice,
           },
         });
         report.updated++;
-        log("INFO", `Updated: ${validated.productName}`);
+        console.log(`✓ Updated: ${productName}`);
       } else {
         await prisma.product.create({
           data: {
-            ...transformRowToDto(validated, categoryId, brand.id),
-            slug: createSlug(validated.productName),
+            sku,
+            name: productName,
+            slug: createSlug(productName),
+            description: String(row["Core Active Ingredients"] || "") || null,
+            ingredients: String(row["Core Active Ingredients"] || "") || null,
+            packSize: String(row["Pack Size"] || "") || null,
+            price: retailPrice,
+            brandId: brand.id,
+            categoryId,
             images: {
               create: { imageUrl: "/images/products/placeholder.webp" },
             },
           },
         });
         report.imported++;
-        log("SUCCESS", `Imported: ${validated.productName}`);
+        console.log(`✓ Imported: ${productName}`);
       }
     } catch (error: any) {
       report.failed++;
-      report.errors.push(`Error importing ${row["SKU Code"]}: ${error.message}`);
-      log("ERROR", `Failed: ${row["SKU Code"]}`);
+      const skuCode = row["SKU Code"] || "unknown";
+      report.errors.push(`Error: SKU=${skuCode}, ${error.message}`);
     }
   }
 
-  printReport(report);
   await prisma.$disconnect();
-}
-
-function getAllCategories(rows: { category: string }[]): Set<string> {
-  return new Set(rows.map((r) => r.category).filter(Boolean));
+  return report;
 }
 
 async function getOrCreateBrand() {
@@ -118,11 +135,7 @@ async function getOrCreateCategory(name: string): Promise<{ id: string; justCrea
 
   if (!category) {
     category = await prisma.category.create({
-      data: {
-        name,
-        slug,
-        description: null,
-      },
+      data: { name, slug, description: null },
     });
     return { id: category.id, justCreated: true };
   }
