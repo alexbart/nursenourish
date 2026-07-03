@@ -1,10 +1,15 @@
-export class ApiError extends Error {
-  public readonly statusCode: number;
+import type { ErrorCode } from "@nursenourish/shared";
 
-  constructor(statusCode: number, message: string) {
+export class ApiError extends Error {
+  constructor(
+    public readonly statusCode: number,
+    public readonly code: ErrorCode,
+    message: string,
+    public readonly details?: unknown
+  ) {
     super(message);
 
-    this.statusCode = statusCode;
+    this.name = "ApiError";
 
     Error.captureStackTrace(this, this.constructor);
   }

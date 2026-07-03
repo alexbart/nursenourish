@@ -5,7 +5,7 @@ import morgan from "morgan";
 
 import routes from "./routes/index.js";
 import { notFoundMiddleware } from "./middlewares/not-found.middleware.js";
-import { errorMiddleware } from "./middlewares/error.middleware.js";
+import { errorHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
 
@@ -30,7 +30,7 @@ app.use("/api/v1", routes)
 
 app.use(notFoundMiddleware)
 
-app.use(errorMiddleware)
+app.use(errorHandler)
 
 
 

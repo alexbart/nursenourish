@@ -4,6 +4,7 @@ import type {
 import { ApiError } from "../../shared/ApiError.js";
 import { getPagination } from "../../shared/pagination.js";
 import { prisma } from "../../prisma/prisma.js";
+import { ErrorCodes, HttpStatus } from "@nursenourish/shared";
 
 import type { CreateStockMovementInput } from "./stock-movement.validator.js";
 
@@ -30,7 +31,8 @@ export class StockMovementService {
 
         if (adjustedQuantity < 0) {
           throw new ApiError(
-            400,
+            HttpStatus.BAD_REQUEST,
+            ErrorCodes.BAD_REQUEST,
             `Insufficient stock. Current: ${inventory.quantity}, attempted to ${data.quantity < 0 ? "remove" : "add"} ${Math.abs(data.quantity)}`
           );
         }
@@ -122,7 +124,7 @@ export class StockMovementService {
     });
 
     if (!movement) {
-      throw new ApiError(404, "Stock movement not found");
+      throw new ApiError(HttpStatus.NOT_FOUND, ErrorCodes.RESOURCE_NOT_FOUND, "Stock movement not found");
     }
 
     return movement;

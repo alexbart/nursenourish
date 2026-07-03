@@ -2,6 +2,7 @@ import slugify from "slugify";
 
 import { prisma } from "../../prisma/prisma.js";
 import { ApiError } from "../../shared/ApiError.js";
+import { ErrorCodes, HttpStatus } from "@nursenourish/shared";
 import type { CreateCategoryInput } from "./category.validator.js";
 
 export class CategoryService {
@@ -20,7 +21,8 @@ export class CategoryService {
 
     if (existingCategory) {
       throw new ApiError(
-        409,
+        HttpStatus.CONFLICT,
+        ErrorCodes.CATEGORY_ALREADY_EXISTS,
         "Category already exists"
       );
     }
@@ -52,7 +54,8 @@ export class CategoryService {
 
     if (!category) {
       throw new ApiError(
-        404,
+        HttpStatus.NOT_FOUND,
+        ErrorCodes.CATEGORY_NOT_FOUND,
         "Category not found"
       );
     }
@@ -70,7 +73,8 @@ export class CategoryService {
 
     if (!category) {
       throw new ApiError(
-        404,
+        HttpStatus.NOT_FOUND,
+        ErrorCodes.CATEGORY_NOT_FOUND,
         "Category not found"
       );
     }

@@ -4,6 +4,7 @@ import { prisma } from "../../prisma/prisma.js";
 import { ApiError } from "../../shared/ApiError.js";
 import { getPagination } from "../../shared/pagination.js";
 import { storageService } from "../../services/storage/index.js";
+import { ErrorCodes, HttpStatus } from "@nursenourish/shared";
 
 import type { ProductQuery } from "./product.types.js";
 import type { CreateProductInput } from "./product.validator.js";
@@ -19,7 +20,8 @@ export class ProductService {
 
     if (!category) {
       throw new ApiError(
-        404,
+        HttpStatus.NOT_FOUND,
+        ErrorCodes.CATEGORY_NOT_FOUND,
         "Category not found"
       );
     }
@@ -33,7 +35,8 @@ export class ProductService {
 
     if (!brand) {
       throw new ApiError(
-        404,
+        HttpStatus.NOT_FOUND,
+        ErrorCodes.BRAND_NOT_FOUND,
         "Brand not found"
       );
     }
@@ -52,7 +55,8 @@ export class ProductService {
 
     if (existingProduct) {
       throw new ApiError(
-        409,
+        HttpStatus.CONFLICT,
+        ErrorCodes.PRODUCT_ALREADY_EXISTS,
         "Product already exists"
       );
     }
@@ -71,7 +75,8 @@ export class ProductService {
 
     if (existingSku) {
       throw new ApiError(
-        409,
+        HttpStatus.CONFLICT,
+        ErrorCodes.BAD_REQUEST,
         "Product SKU already exists"
       );
     }
@@ -281,7 +286,8 @@ export class ProductService {
 
     if (!product) {
       throw new ApiError(
-        404,
+        HttpStatus.NOT_FOUND,
+        ErrorCodes.PRODUCT_NOT_FOUND,
         "Product not found"
       );
     }

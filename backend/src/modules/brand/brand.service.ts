@@ -2,6 +2,7 @@ import slugify from "slugify";
 
 import { prisma } from "../../prisma/prisma.js";
 import { ApiError } from "../../shared/ApiError.js";
+import { ErrorCodes, HttpStatus } from "@nursenourish/shared";
 import type { CreateBrandInput } from "./brand.validator.js";
 
 export class BrandService {
@@ -18,7 +19,7 @@ export class BrandService {
     });
 
     if (existingBrand) {
-      throw new ApiError(409, "Brand already exists");
+      throw new ApiError(HttpStatus.CONFLICT, ErrorCodes.BRAND_ALREADY_EXISTS, "Brand already exists");
     }
 
     return prisma.brand.create({
@@ -46,7 +47,7 @@ export class BrandService {
     });
 
     if (!brand) {
-      throw new ApiError(404, "Brand not found");
+      throw new ApiError(HttpStatus.NOT_FOUND, ErrorCodes.BRAND_NOT_FOUND, "Brand not found");
     }
 
     return brand;
@@ -60,7 +61,7 @@ export class BrandService {
     });
 
     if (!brand) {
-      throw new ApiError(404, "Brand not found");
+      throw new ApiError(HttpStatus.NOT_FOUND, ErrorCodes.BRAND_NOT_FOUND, "Brand not found");
     }
 
     await prisma.brand.delete({

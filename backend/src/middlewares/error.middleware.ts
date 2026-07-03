@@ -2,35 +2,51 @@ import type { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 
 import { ApiError } from "../shared/ApiError.js";
+import type { ApiErrorResponse } from "@nursenourish/shared/types/api.js";
+import { ErrorCodes } from "@nursenourish/shared";
+import { HttpStatus } from "@nursenourish/shared";
 
-export function errorMiddleware(
-  error: Error,
-  _req: Request,
+export function errorHandler(
+  err: unknown,
+  req: Request,
   res: Response,
   _next: NextFunction
 ) {
-  console.error(error);
+  console.error(err);
 
-  if (error instanceof ZodError) {
-    return res.status(400).json({
-      success: false,
-      message: "Validation failed",
-      errors: error.issues.map((issue) => ({
-        field: issue.path.join("."),
-        message: issue.message,
-      })),
-    });
+  if (err instanceof ApiError) {
+    const response: ApiErrorResponse = {
+      error: {
+        code: err.code,
+        message: err.message,
+        details: err.details,
+      },
+    };
+
+    return res.status(err.statusCode).json(response);
   }
 
-  if (error instanceof ApiError) {
-    return res.status(error.statusCode).json({
-      success: false,
-      message: error.message,
-    });
+  if (err instanceof ZodError) {
+    const response: ApiErrorResponse = {
+      error: {
+        code: ErrorCodes.VALIDATION_ERROR,
+        message: "Validation failed.",
+        details: err.issues.map(issue => ({
+          field: issue.path.join("."),
+          message: issue.message,
+        })),
+      },
+    };
+
+    return res.status(HttpStatus.UNPROCESSABLE_ENTITY).json(response);
   }
 
-  return res.status(500).json({
-    success: false,
-    message: "Internal Server Error",
-  });
+  const response: ApiErrorResponse = {
+    error: {
+      code: ErrorCodes.INTERNAL_SERVER_ERROR,
+      message: "An unexpected error occurred.",
+    },
+  };
+
+  return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json(response);
 }
