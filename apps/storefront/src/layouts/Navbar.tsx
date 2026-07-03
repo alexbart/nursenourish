@@ -1,9 +1,12 @@
 import { Link } from "react-router-dom";
 import { useCartStore } from "@/features/cart/store/cart.store";
+import { useAuthStore } from "@/features/auth/store/auth.store";
 import { SearchBar } from "@/components/search/SearchBar";
 
 export function Navbar() {
   const totalItems = useCartStore((state) => state.totalItems());
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
   return (
     <header className="bg-surface border-b border-border sticky top-0 z-50">
@@ -45,6 +48,22 @@ export function Navbar() {
                 </span>
               )}
             </Link>
+
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-primary">{user.firstName}</span>
+                <button
+                  onClick={logout}
+                  className="text-sm text-muted hover:text-primary"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link to="/login" className="text-sm text-text hover:text-primary transition">
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </div>
