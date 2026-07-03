@@ -15,6 +15,9 @@
     "build": "tsc",
     "dev": "tsc --build --watch"
   },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  },
   "files": [
     "dist"
   ]
