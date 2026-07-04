@@ -2,95 +2,136 @@
 
 Premium nutritional supplements and healthcare essentials delivered across Kenya.
 
-## Architecture
-
-**Clean Architecture (Backend):**
-- Controller → Service → Repository
-- DTOs never expose Prisma models
-- Shared contracts in `@nursenourish/shared`
-
-**Feature-based (Storefront):**
-- `features/` - Domain modules (cart, auth, order)
-- `pages/` - Route pages
-- `components/` - UI components
-- `hooks/` - TanStack Query hooks
-- `api/` - API functions
-
-## Installation
+## 🚀 Quick Start
 
 ```bash
-# Install all dependencies
+# Clone and install
+git clone <repo-url>
+cd NurseNourish
 npm install
 
-# Run backend
-cd backend
-npx tsx watch src/server.ts
-
-# Run storefront
-cd apps/storefront
-npm run dev
+# Start all services
+cd backend && npx tsx watch src/server.ts  # Backend on :5000
+cd apps/storefront && npm run dev            # Frontend on :3000
 ```
 
-## Environment Variables
+## 📁 Project Structure
 
-### Backend (.env)
 ```
+├── backend/           # Express API server
+│   ├── src/
+│   │   ├── modules/   # Clean Architecture modules
+│   │   │   ├── product/
+│   │   │   ├── category/
+│   │   │   ├── brand/
+│   │   │   ├── auth/
+│   │   │   └── payment/
+│   │   ├── prisma/    # Database schema
+│   │   └── routes/    # API routes
+│   └── .env.example
+├── apps/storefront/     # React storefront
+│   ├── src/
+│   │   ├── features/  # Domain modules (cart, auth)
+│   │   ├── pages/     # Route pages
+│   │   ├── components/
+│   │   └── hooks/
+│   └── .env.example
+└── packages/shared/     # Shared DTOs and types
+```
+
+## ⚙️ Environment Variables
+
+### Backend (`backend/.env`)
+```bash
 NODE_ENV=development
 PORT=5000
-DATABASE_URL=postgresql://...
-JWT_SECRET=
-JWT_REFRESH_SECRET=
-PAYSTACK_SECRET_KEY=
-PAYSTACK_WEBHOOK_SECRET=
+DATABASE_URL=postgresql://postgres:password@localhost:5432/nursenourish
+
+# JWT
+JWT_SECRET=your-secret-key-change-in-production
+JWT_REFRESH_SECRET=your-refresh-secret-change-in-production
+
+# Paystack
+PAYSTACK_SECRET_KEY=sk_test_your-key
+PAYSTACK_WEBHOOK_SECRET=your-webhook-secret
+
+# Frontend
 FRONTEND_URL=http://localhost:3000
 ```
 
-### Storefront (.env)
-```
+### Storefront (`apps/storefront/.env`)
+```bash
 VITE_API_URL=http://localhost:5000/api/v1
-VITE_PAYSTACK_PUBLIC_KEY=pk_test_xxxxxxxxx
+VITE_PAYSTACK_PUBLIC_KEY=pk_test_your-key
 ```
 
-## Scripts
+## 🛠️ Development
 
-### Backend
-- `npm run dev` - Start dev server (tsx)
-- `npm run build` - Build TypeScript
-- `npm run import:products` - Import products from Excel
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start Vite dev server |
+| `npm run build` | Build for production |
+| `npm run typecheck` | TypeScript check |
+| `npm run lint` | Lint code |
 
-### Storefront
-- `npm run dev` - Start Vite dev server (port 3000)
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
+## 🐳 Docker
 
-## API Overview
+```bash
+docker-compose up -d
+# Backend: http://localhost:5000
+# Frontend: http://localhost:3000
+# PostgreSQL: localhost:5432
+```
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/v1/products` | GET | List/search products |
-| `/api/v1/products/:slug` | GET | Get product by slug |
-| `/api/v1/categories` | GET | List categories |
-| `/api/v1/auth/register` | POST | Register customer |
-| `/api/v1/auth/login` | POST | Login + get tokens |
-| `/api/v1/auth/refresh` | POST | Refresh access token |
-| `/api/v1/orders` | POST | Create order (auth required) |
-| `/api/v1/payments/initialize` | POST | Initialize Paystack payment |
-| `/api/v1/payments/verify/:ref` | GET | Verify payment |
-| `/api/v1/payments/webhook` | POST | Paystack webhook |
+## 📚 API
 
-## Deployment
+### Authentication
+- `POST /api/v1/auth/register` - Register customer
+- `POST /api/v1/auth/login` - Login + tokens
+- `POST /api/v1/auth/refresh` - Refresh access token
 
-- **PostgreSQL**: Neon or Supabase
-- **Backend**: Railway, Render, or DigitalOcean
-- **Storefront**: Vercel
-- **Images**: Cloudinary
-- **Domain/SSL**: Cloudflare (automatic)
+### Products
+- `GET /api/v1/products` - List products (supports `?page=&limit=&search=&category=`)
+- `GET /api/v1/products/:slug` - Get product by slug
+- `GET /api/v1/categories` - List categories
 
-## Future Roadmap
+### Orders
+- `POST /api/v1/orders` - Create order (requires JWT)
+- `GET /api/v1/orders` - List customer orders
+
+### Payments
+- `POST /api/v1/payments/initialize` - Initialize Paystack
+- `GET /api/v1/payments/verify/:ref` - Verify payment
+
+## 🏗️ Architecture
+
+**Backend - Clean Architecture:**
+- **Controller** - HTTP handlers
+- **Service** - Business logic
+- **Repository** - Data access (only layer with Prisma)
+- **DTOs** - Explicit mappings, never expose Prisma models
+
+**Frontend - Feature-based:**
+- Each domain (cart, auth) has its own folder
+- Zustand for client state (cart, auth)
+- TanStack Query for server state (products, orders)
+
+## 🚀 Deployment
+
+| Platform | Service |
+|----------|---------|
+| Database | Neon or Supabase |
+| Backend | Railway, Render, DigitalOcean |
+| Frontend | Vercel |
+| Images | Cloudinary |
+| DNS/SSL | Cloudflare |
+
+## 📋 Roadmap
 
 Phase 2:
 - Admin dashboard
 - Cloudinary integration
 - Inventory management
-- Order history
+- Order history page
 - Email notifications
+- Automated testing
