@@ -1,6 +1,7 @@
 import { prisma } from "../../prisma/prisma.js";
 import { createSlug } from "../../shared/utils/slug.js";
 import type { ImportReport } from "./report.js";
+import XLSX from "xlsx";
 
 export async function importCatalog(excelPath: string): Promise<ImportReport> {
   const report: ImportReport = {
@@ -15,7 +16,6 @@ export async function importCatalog(excelPath: string): Promise<ImportReport> {
 
   console.log("📦 Starting catalog import...");
 
-  const XLSX = await import("xlsx");
   const workbook = XLSX.readFile(excelPath);
   const worksheet = workbook.Sheets[workbook.SheetNames[0]];
   const rawRows: any[] = XLSX.utils.sheet_to_json(worksheet);
