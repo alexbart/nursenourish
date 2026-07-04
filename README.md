@@ -81,8 +81,8 @@ VITE_PAYSTACK_PUBLIC_KEY=pk_test_your-key
 |---------|-------------|
 | `npm run dev` | Start Vite dev server |
 | `npm run build` | Build for production |
-| `npm run typecheck` | TypeScript check |
-| `npm run lint` | Lint code |
+| `npm run seed` | Seed database with sample data (backend) |
+| `npm run import:products` | Import products from Excel (backend) |
 
 ## 🐳 Docker
 
