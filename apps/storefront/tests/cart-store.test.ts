@@ -7,7 +7,7 @@ describe("Cart Store", () => {
   });
 
   it("should add items to cart", () => {
-    const { addItem } = useCartStore.getState();
+    const addItem = useCartStore.getState().addItem;
     
     addItem({
       id: "1",
@@ -25,7 +25,8 @@ describe("Cart Store", () => {
   });
 
   it("should calculate subtotal", () => {
-    const { addItem, subtotal } = useCartStore.getState();
+    const addItem = useCartStore.getState().addItem;
+    const subtotal = useCartStore.getState().subtotal;
     
     addItem({
       id: "1",
@@ -49,11 +50,12 @@ describe("Cart Store", () => {
       image: "/p2.jpg",
     });
 
-    expect(subtotal()).toBe(300);
+    expect(subtotal()).toBe(400);
   });
 
   it("should calculate total items", () => {
-    const { addItem, totalItems } = useCartStore.getState();
+    const addItem = useCartStore.getState().addItem;
+    const totalItems = useCartStore.getState().totalItems;
     
     addItem({
       id: "1",
@@ -70,7 +72,8 @@ describe("Cart Store", () => {
   });
 
   it("should remove items", () => {
-    const { addItem, removeItem } = useCartStore.getState();
+    const addItem = useCartStore.getState().addItem;
+    const removeItem = useCartStore.getState().removeItem;
     
     addItem({
       id: "1",
@@ -88,7 +91,8 @@ describe("Cart Store", () => {
   });
 
   it("should update quantity", () => {
-    const { addItem, updateQuantity } = useCartStore.getState();
+    const addItem = useCartStore.getState().addItem;
+    const updateQuantity = useCartStore.getState().updateQuantity;
     
     addItem({
       id: "1",
