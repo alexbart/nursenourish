@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useCartStore } from "@/features/cart/store/cart.store";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { createOrder } from "@/api/order";
+import { initializePayment } from "@/api/payment";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { toast } from "react-hot-toast";
 
@@ -9,18 +10,34 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const { items, subtotal, clearCart } = useCartStore();
-  const queryClient = useQueryClient();
 
-  const mutation = useMutation({
+  const orderMutation = useMutation({
     mutationFn: createOrder,
-    onSuccess: () => {
-      clearCart();
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      toast.success("Order created! Ready for Paystack integration.");
-      navigate("/orders");
+    onSuccess: (response) => {
+      const order = response.data?.data;
+      if (order) {
+        paymentMutation.mutate({
+          orderId: order.id,
+          email: user?.email || "",
+          amount: subtotal(),
+        });
+      }
     },
     onError: () => {
       toast.error("Failed to create order");
+    },
+  });
+
+  const paymentMutation = useMutation({
+    mutationFn: initializePayment,
+    onSuccess: (response) => {
+      const { authorization_url } = response.data?.data;
+      if (authorization_url) {
+        window.location.href = authorization_url;
+      }
+    },
+    onError: () => {
+      toast.error("Payment initialization failed");
     },
   });
 
@@ -30,14 +47,14 @@ export function CheckoutPage() {
       return;
     }
 
-    mutation.mutate({
+    orderMutation.mutate({
       items: items.map((i) => ({
         productId: i.productId,
         name: i.name,
         price: i.price,
         quantity: i.quantity,
       })),
-      subtotal,
+      subtotal: subtotal(),
     });
   };
 
@@ -48,6 +65,8 @@ export function CheckoutPage() {
       </div>
     );
   }
+
+  const isLoading = orderMutation.isPending || paymentMutation.isPending;
 
   return (
     <div className="min-h-screen bg-background py-12">
@@ -88,10 +107,10 @@ export function CheckoutPage() {
               </div>
               <button
                 onClick={handlePlaceOrder}
-                disabled={mutation.isPending}
+                disabled={isLoading}
                 className="w-full py-3 bg-primary text-white rounded-lg hover:bg-primary-hover transition disabled:opacity-50"
               >
-                {mutation.isPending ? "Creating..." : user ? "Place Order" : "Sign In to Place Order"}
+                {isLoading ? "Processing..." : user ? "Place Order & Pay" : "Sign In to Checkout"}
               </button>
             </div>
           </div>
