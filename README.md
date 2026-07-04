@@ -79,10 +79,10 @@ VITE_PAYSTACK_PUBLIC_KEY=pk_test_your-key
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | Build for production |
-| `npm run seed` | Seed database with sample data (backend) |
-| `npm run import:products` | Import products from Excel (backend) |
+| `npm run dev` | Start backend dev server |
+| `npm run build` | Build backend |
+| `npm run seed` | Seed database with sample data |
+| `npm run import:products` | Import from Excel file |
 
 ## 🐳 Docker
 
@@ -92,6 +92,27 @@ docker-compose up -d
 # Frontend: http://localhost:3000
 # PostgreSQL: localhost:5432
 ```
+
+# Admin
+
+The product import utility is a backend script (not exposed in frontend):
+
+```bash
+# Import from default location
+cd backend
+npm run import:products
+
+# Import from specific file
+npm run import:products -- ./NurseNourish_Master_Retail_Catalog_2026.xlsx
+```
+
+Excel columns expected:
+- `SKU Code` - Product SKU
+- `Product Name & Variant` - Product name
+- `Category` - Category name
+- `Target Retail (KES)` - Price
+- `Core Active Ingredients` - Description/ingredients
+- `Pack Size` - Pack size
 
 ## 📚 API
 
