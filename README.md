@@ -5,14 +5,24 @@ Premium nutritional supplements and healthcare essentials delivered across Kenya
 ## 🚀 Quick Start
 
 ```bash
-# Clone and install
+# Clone the repository
 git clone <repo-url>
 cd NurseNourish
+
+# Install backend dependencies
+cd backend
+npm install
+
+# Install storefront dependencies  
+cd ../apps/storefront
 npm install
 
 # Start all services
-cd backend && npx tsx watch src/server.ts  # Backend on :5000
-cd apps/storefront && npm run dev            # Frontend on :3000
+cd ../backend
+npx tsx watch src/server.ts  # Backend on :5000
+
+cd ../apps/storefront
+npm run dev                    # Frontend on :3000
 ```
 
 ## 📁 Project Structure
