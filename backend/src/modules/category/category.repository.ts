@@ -1,9 +1,5 @@
 import { prisma } from "../../prisma/prisma.js";
-import type { CreateCategoryDto, UpdateCategoryDto } from "@nursenourish/shared/dto/category.dto.js";
-
-export type CategoryWithProducts = Awaited<ReturnType<typeof prisma.category.findUnique<{
-  include: { products: true };
-}>>>;
+import type { CreateCategoryDto, UpdateCategoryDto } from "@nursenourish/shared";
 
 export class CategoryRepository {
   async findAll() {
@@ -39,9 +35,8 @@ export class CategoryRepository {
     return prisma.category.update({
       where: { id },
       data: {
-        name: data.name,
-        slug: data.name ? this.generateSlug(data.name) : undefined,
-        description: data.description,
+        ...(data.name !== undefined ? { name: data.name, slug: this.generateSlug(data.name) } : {}),
+        ...(data.description !== undefined ? { description: data.description } : {}),
       },
     });
   }

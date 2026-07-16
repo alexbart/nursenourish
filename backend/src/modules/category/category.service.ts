@@ -3,7 +3,7 @@ import { toCategoryDto } from "./category.mapper.js";
 import { ApiError } from "../../shared/ApiError.js";
 import { ErrorCodes, HttpStatus } from "@nursenourish/shared";
 import type { CreateCategoryInput, UpdateCategoryInput } from "./category.validator.js";
-import type { CategoryResponseDto } from "@nursenourish/shared/dto/category.dto.js";
+import type { CategoryResponseDto } from "@nursenourish/shared";
 
 export class CategoryService {
   async create(data: CreateCategoryInput): Promise<CategoryResponseDto> {

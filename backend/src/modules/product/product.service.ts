@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma.js";
 import { productRepository } from "./product.repository.js";
 import { toProductDto } from "./product.mapper.js";
@@ -5,12 +6,16 @@ import { storageService } from "../../services/storage/index.js";
 import { ApiError } from "../../shared/ApiError.js";
 import { ErrorCodes, HttpStatus } from "@nursenourish/shared";
 import type { CreateProductInput } from "./product.validator.js";
-import type { ProductResponseDto } from "@nursenourish/shared/dto/product.dto.js";
+import type { ProductResponseDto } from "@nursenourish/shared";
 import type { ProductQuery } from "./product.types.js";
+
+type UpdateProductInput = {
+  [K in keyof CreateProductInput]?: CreateProductInput[K] | undefined;
+};
 
 export class ProductService {
   async create(data: CreateProductInput): Promise<ProductResponseDto> {
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const category = await tx.category.findUnique({
         where: { id: data.categoryId },
       });
@@ -90,7 +95,7 @@ export class ProductService {
     return products.map(toProductDto);
   }
 
-  async update(id: string, data: Partial<CreateProductInput>): Promise<ProductResponseDto> {
+  async update(id: string, data: UpdateProductInput): Promise<ProductResponseDto> {
     const product = await productRepository.findById(id);
     if (!product) {
       throw new ApiError(

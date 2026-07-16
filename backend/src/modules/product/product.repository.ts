@@ -1,29 +1,32 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma/prisma.js";
 import { createSlug } from "../../shared/utils/slug.js";
 import type { ProductQuery } from "./product.types.js";
-import type { CreateProductDto } from "@nursenourish/shared/dto/product.dto.js";
+import type { CreateProductDto } from "@nursenourish/shared";
 
-export type ProductWithRelations = Awaited<ReturnType<typeof prisma.product.findUnique<{
+export type ProductWithRelations = Prisma.ProductGetPayload<{
   include: {
     category: true;
     brand: true;
     images: true;
     inventory: true;
   };
-}>>>;
+}>;
 
 export interface ProductSearchCriteria extends ProductQuery {
   sortBy?: "name" | "price" | "createdAt";
   order?: "asc" | "desc";
 }
 
+type ProductClient = Prisma.TransactionClient | typeof prisma;
+
 export class ProductRepository {
-  async create(data: CreateProductDto, tx?: typeof prisma) {
+  async create(data: CreateProductDto, tx?: ProductClient) {
     const client = tx || prisma;
     return client.product.create({
       data: {
         name: data.name,
-        slug: await this.generateUniqueSlug(data.name, tx),
+        slug: await this.generateUniqueSlug(data.name, client),
         sku: data.sku ?? await this.generateSKU(data),
         description: data.description ?? null,
         ingredients: data.ingredients ?? null,
@@ -36,7 +39,7 @@ export class ProductRepository {
         categoryId: data.categoryId,
         brandId: data.brandId,
         images: {
-          create: data.images?.map((image) => ({
+          create: data.images?.map((image: { imageUrl: string }) => ({
             imageUrl: image.imageUrl,
           })) ?? [],
         },
@@ -50,30 +53,41 @@ export class ProductRepository {
     });
   }
 
-  async update(id: string, data: Partial<CreateProductDto>, tx?: typeof prisma) {
+  async update(
+    id: string,
+    data: {
+      [K in keyof CreateProductDto]?: CreateProductDto[K] | undefined;
+    },
+    tx?: ProductClient
+  ) {
     const client = tx || prisma;
+    const updateData: Prisma.ProductUpdateInput = {
+      ...(data.name !== undefined ? { name: data.name, slug: await this.generateUniqueSlug(data.name, client) } : {}),
+      ...(data.sku !== undefined ? { sku: data.sku } : {}),
+      ...(data.description !== undefined ? { description: data.description } : {}),
+      ...(data.ingredients !== undefined ? { ingredients: data.ingredients } : {}),
+      ...(data.usageInstructions !== undefined ? { usageInstructions: data.usageInstructions } : {}),
+      ...(data.warnings !== undefined ? { warnings: data.warnings } : {}),
+      ...(data.price !== undefined ? { price: data.price } : {}),
+      ...(data.salePrice !== undefined ? { salePrice: data.salePrice } : {}),
+      ...(data.featured !== undefined ? { featured: data.featured } : {}),
+      ...(data.prescriptionRequired !== undefined ? { prescriptionRequired: data.prescriptionRequired } : {}),
+      ...(data.categoryId !== undefined ? { category: { connect: { id: data.categoryId } } } : {}),
+      ...(data.brandId !== undefined ? { brand: { connect: { id: data.brandId } } } : {}),
+      ...(data.images
+        ? {
+            images: {
+              create: data.images.map((image: { imageUrl: string }) => ({
+                imageUrl: image.imageUrl,
+              })),
+            },
+          }
+        : {}),
+    };
+
     return client.product.update({
       where: { id },
-      data: {
-        name: data.name,
-        slug: data.name ? await this.generateUniqueSlug(data.name, tx) : undefined,
-        sku: data.sku,
-        description: data.description,
-        ingredients: data.ingredients,
-        usageInstructions: data.usageInstructions,
-        warnings: data.warnings,
-        price: data.price,
-        salePrice: data.salePrice,
-        featured: data.featured,
-        prescriptionRequired: data.prescriptionRequired,
-        categoryId: data.categoryId,
-        brandId: data.brandId,
-        images: data.images ? {
-          create: data.images.map((image) => ({
-            imageUrl: image.imageUrl,
-          })),
-        } : undefined,
-      },
+      data: updateData,
       include: {
         category: true,
         brand: true,
@@ -83,14 +97,14 @@ export class ProductRepository {
     });
   }
 
-  async delete(id: string, tx?: typeof prisma) {
+  async delete(id: string, tx?: ProductClient) {
     const client = tx || prisma;
     return client.product.delete({
       where: { id },
     });
   }
 
-  async findById(id: string, tx?: typeof prisma) {
+  async findById(id: string, tx?: ProductClient) {
     const client = tx || prisma;
     return client.product.findUnique({
       where: { id },
@@ -103,7 +117,7 @@ export class ProductRepository {
     });
   }
 
-  async findBySlug(slug: string, tx?: typeof prisma) {
+  async findBySlug(slug: string, tx?: ProductClient) {
     const client = tx || prisma;
     return client.product.findUnique({
       where: { slug },
@@ -116,7 +130,7 @@ export class ProductRepository {
     });
   }
 
-  async findBySku(sku: string, tx?: typeof prisma) {
+  async findBySku(sku: string, tx?: ProductClient) {
     const client = tx || prisma;
     return client.product.findUnique({
       where: { sku },
@@ -134,7 +148,7 @@ export class ProductRepository {
     const limit = Number(criteria.limit) || 20;
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: Prisma.ProductWhereInput = {};
 
     if (criteria.search) {
       where.OR = [
@@ -149,7 +163,7 @@ export class ProductRepository {
     }
 
     if (criteria.featured !== undefined) {
-      where.featured = criteria.featured === true || criteria.featured === "true";
+      where.featured = criteria.featured === true || String(criteria.featured) === "true";
     }
 
     if (criteria.category) {
@@ -174,7 +188,7 @@ export class ProductRepository {
       where.prescriptionRequired = criteria.prescriptionRequired;
     }
 
-    let orderBy: any = { createdAt: "desc" };
+    let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: "desc" };
     if (criteria.sortBy === "price" && criteria.order === "asc") orderBy = { price: "asc" };
     else if (criteria.sortBy === "price" && criteria.order === "desc") orderBy = { price: "desc" };
     else if (criteria.sortBy === "name" && criteria.order === "asc") orderBy = { name: "asc" };
@@ -202,7 +216,7 @@ export class ProductRepository {
     };
   }
 
-  private async generateUniqueSlug(name: string, tx?: typeof prisma): Promise<string> {
+  private async generateUniqueSlug(name: string, tx?: ProductClient): Promise<string> {
     const baseSlug = createSlug(name);
     const client = tx || prisma;
     let slug = baseSlug;

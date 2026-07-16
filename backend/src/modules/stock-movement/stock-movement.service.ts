@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import type {
   StockMovementQuery,
 } from "./stock-movement.types.js";
@@ -11,7 +12,7 @@ import type { CreateStockMovementInput } from "./stock-movement.validator.js";
 export class StockMovementService {
   async createStockMovement(data: CreateStockMovementInput) {
     const movement =
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         let inventory = await tx.inventory.findUnique({
           where: {
             productId: data.productId,

@@ -1,6 +1,6 @@
 import { prisma } from "../../prisma/prisma.js";
 import { createSlug } from "../../shared/utils/slug.js";
-import type { CreateBrandDto, UpdateBrandDto, BrandResponseDto } from "@nursenourish/shared/dto/brand.dto.js";
+import type { CreateBrandDto, UpdateBrandDto } from "@nursenourish/shared";
 
 export class BrandRepository {
   async create(data: CreateBrandDto) {
@@ -17,9 +17,8 @@ export class BrandRepository {
     return prisma.brand.update({
       where: { id },
       data: {
-        name: data.name,
-        slug: data.name ? createSlug(data.name) : undefined,
-        description: data.description,
+        ...(data.name !== undefined ? { name: data.name, slug: createSlug(data.name) } : {}),
+        ...(data.description !== undefined ? { description: data.description } : {}),
       },
     });
   }

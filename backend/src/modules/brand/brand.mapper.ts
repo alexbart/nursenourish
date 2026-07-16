@@ -1,4 +1,4 @@
-import type { BrandResponseDto } from "@nursenourish/shared/dto/brand.dto.js";
+import type { BrandResponseDto } from "@nursenourish/shared";
 
 export function toBrandDto(brand: {
   id: string;

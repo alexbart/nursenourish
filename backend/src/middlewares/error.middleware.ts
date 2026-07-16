@@ -2,9 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 
 import { ApiError } from "../shared/ApiError.js";
-import type { ApiErrorResponse } from "@nursenourish/shared/types/api.js";
-import { ErrorCodes } from "@nursenourish/shared";
-import { HttpStatus } from "@nursenourish/shared";
+import { ErrorCodes, HttpStatus, type ApiErrorResponse } from "@nursenourish/shared";
 
 export function errorHandler(
   err: unknown,

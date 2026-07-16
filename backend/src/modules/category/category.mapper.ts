@@ -1,7 +1,11 @@
-import type { CategoryResponseDto } from "@nursenourish/shared/dto/category.dto.js";
-import type { CategoryWithProducts } from "./category.repository.js";
+import type { CategoryResponseDto } from "@nursenourish/shared";
 
-export function toCategoryDto(category: CategoryWithProducts): CategoryResponseDto {
+export function toCategoryDto(category: {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+}): CategoryResponseDto {
   return {
     id: category.id,
     name: category.name,

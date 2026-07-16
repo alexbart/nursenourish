@@ -7,10 +7,10 @@ export interface BrandResponseDto {
 
 export interface CreateBrandDto {
   name: string;
-  description?: string;
+  description?: string | undefined;
 }
 
 export interface UpdateBrandDto {
-  name?: string;
-  description?: string;
+  name?: string | undefined;
+  description?: string | undefined;
 }

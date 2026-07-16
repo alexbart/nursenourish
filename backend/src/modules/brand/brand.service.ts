@@ -3,7 +3,7 @@ import { toBrandDto } from "./brand.mapper.js";
 import { ApiError } from "../../shared/ApiError.js";
 import { ErrorCodes, HttpStatus } from "@nursenourish/shared";
 import type { CreateBrandInput, UpdateBrandInput } from "./brand.validator.js";
-import type { BrandResponseDto } from "@nursenourish/shared/dto/brand.dto.js";
+import type { BrandResponseDto } from "@nursenourish/shared";
 
 export class BrandService {
   async create(data: CreateBrandInput): Promise<BrandResponseDto> {

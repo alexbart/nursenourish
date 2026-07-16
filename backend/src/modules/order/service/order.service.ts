@@ -10,7 +10,7 @@ export class OrderService {
         userId,
         subtotal: data.subtotal,
         total,
-        status: "AWAITING_PAYMENT",
+        status: "PENDING",
         items: {
           create: data.items.map((item) => ({
             productId: item.productId,

@@ -1,4 +1,4 @@
-import type { ProductResponseDto, ProductImageDto, BrandSummaryDto, CategorySummaryDto } from "@nursenourish/shared/dto/product.dto.js";
+import type { ProductResponseDto, ProductImageDto } from "@nursenourish/shared";
 
 export function toProductDto(product: {
   id: string;

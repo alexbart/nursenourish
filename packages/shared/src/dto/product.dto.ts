@@ -50,37 +50,37 @@ export interface ProductResponseDto {
   inventory?: {
     quantity: number;
     reservedQuantity: number;
-  };
+  } | undefined;
 }
 
 export interface CreateProductDto {
   name: string;
-  description?: string;
-  ingredients?: string;
-  usageInstructions?: string;
-  warnings?: string;
-  packSize?: string;
+  description?: string | undefined;
+  ingredients?: string | undefined;
+  usageInstructions?: string | undefined;
+  warnings?: string | undefined;
+  packSize?: string | undefined;
   price: number;
-  salePrice?: number;
+  salePrice?: number | undefined;
   categoryId: string;
   brandId: string;
-  featured?: boolean;
-  prescriptionRequired?: boolean;
-  images?: Array<{ imageUrl: string; altText?: string }>;
-  sku?: string;
+  featured?: boolean | undefined;
+  prescriptionRequired?: boolean | undefined;
+  images?: Array<{ imageUrl: string; altText?: string | undefined }> | undefined;
+  sku?: string | undefined;
 }
 
 export interface UpdateProductDto {
-  name?: string;
-  description?: string;
-  ingredients?: string;
-  usageInstructions?: string;
-  warnings?: string;
-  price?: number;
-  salePrice?: number;
-  categoryId?: string;
-  brandId?: string;
-  featured?: boolean;
-  prescriptionRequired?: boolean;
-  images?: Array<{ imageUrl: string; altText?: string }>;
+  name?: string | undefined;
+  description?: string | undefined;
+  ingredients?: string | undefined;
+  usageInstructions?: string | undefined;
+  warnings?: string | undefined;
+  price?: number | undefined;
+  salePrice?: number | undefined;
+  categoryId?: string | undefined;
+  brandId?: string | undefined;
+  featured?: boolean | undefined;
+  prescriptionRequired?: boolean | undefined;
+  images?: Array<{ imageUrl: string; altText?: string | undefined }> | undefined;
 }

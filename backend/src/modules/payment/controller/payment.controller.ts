@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { asyncHandler } from "../../../shared/asyncHandler.js";
+import { requireParam } from "../../../shared/routeParams.js";
 import { paymentService } from "../service/payment.service.js";
 import { HttpStatus } from "@nursenourish/shared";
 
@@ -10,7 +11,7 @@ export const initialize = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const verify = asyncHandler(async (req: Request, res: Response) => {
-  const { reference } = req.params;
+  const reference = requireParam(req.params.reference, "reference");
   const result = await paymentService.verify(reference);
   res.status(HttpStatus.OK).json({ data: result });
 });

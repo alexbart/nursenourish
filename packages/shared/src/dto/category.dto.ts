@@ -7,10 +7,10 @@ export interface CategoryResponseDto {
 
 export interface CreateCategoryDto {
   name: string;
-  description?: string;
+  description?: string | undefined;
 }
 
 export interface UpdateCategoryDto {
-  name?: string;
-  description?: string;
+  name?: string | undefined;
+  description?: string | undefined;
 }

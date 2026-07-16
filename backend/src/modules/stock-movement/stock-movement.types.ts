@@ -2,5 +2,5 @@ export interface StockMovementQuery {
   page?: number | undefined;
   limit?: number | undefined;
   productId?: string | undefined;
-  type?: "PURCHASE" | "SALE" | "ADJUSTMENT" | "RETURN" | undefined;
+  type?: "INITIAL" | "PURCHASE" | "SALE" | "ADJUSTMENT" | "RETURN" | "DAMAGE" | undefined;
 }

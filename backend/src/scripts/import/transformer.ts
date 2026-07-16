@@ -1,5 +1,5 @@
 import type { ExcelProductRow } from "./row-validator.js";
-import type { CreateProductDto } from "@nursenourish/shared/dto/product.dto.js";
+import type { CreateProductDto } from "@nursenourish/shared";
 
 export function transformRowToDto(row: ExcelProductRow, categoryId: string, brandId: string): CreateProductDto {
   return {

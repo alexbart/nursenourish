@@ -17,7 +17,14 @@ export async function importCatalog(excelPath: string): Promise<ImportReport> {
   console.log("📦 Starting catalog import...");
 
   const workbook = XLSX.readFile(excelPath);
-  const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+  const sheetName = workbook.SheetNames[0];
+  if (!sheetName) {
+    throw new Error("Excel file has no sheets");
+  }
+  const worksheet = workbook.Sheets[sheetName];
+  if (!worksheet) {
+    throw new Error(`Sheet not found: ${sheetName}`);
+  }
   const rawRows: any[] = XLSX.utils.sheet_to_json(worksheet);
 
   report.totalRead = rawRows.length;
