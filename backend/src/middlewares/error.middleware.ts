@@ -4,9 +4,14 @@ import { ZodError } from "zod";
 import { ApiError } from "../shared/ApiError.js";
 import { ErrorCodes, HttpStatus, type ApiErrorResponse } from "@nursenourish/shared";
 
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return "An unexpected error occurred.";
+}
+
 export function errorHandler(
   err: unknown,
-  req: Request,
+  _req: Request,
   res: Response,
   _next: NextFunction
 ) {
@@ -29,7 +34,7 @@ export function errorHandler(
       error: {
         code: ErrorCodes.VALIDATION_ERROR,
         message: "Validation failed.",
-        details: err.issues.map(issue => ({
+        details: err.issues.map((issue) => ({
           field: issue.path.join("."),
           message: issue.message,
         })),
@@ -39,10 +44,12 @@ export function errorHandler(
     return res.status(HttpStatus.UNPROCESSABLE_ENTITY).json(response);
   }
 
+  // Surface the real message so Vercel runtime failures (DB/env) are diagnosable
+  const message = getErrorMessage(err);
   const response: ApiErrorResponse = {
     error: {
       code: ErrorCodes.INTERNAL_SERVER_ERROR,
-      message: "An unexpected error occurred.",
+      message,
     },
   };
 

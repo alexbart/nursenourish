@@ -15,8 +15,14 @@ function createPrismaClient(): PrismaClient {
     );
   }
 
+  // Hosted Postgres (Neon/Supabase/Vercel) usually requires TLS
+  const connectionString =
+    databaseUrl.includes("sslmode=") || databaseUrl.includes("localhost")
+      ? databaseUrl
+      : `${databaseUrl}${databaseUrl.includes("?") ? "&" : "?"}sslmode=require`;
+
   const adapter = new PrismaPg({
-    connectionString: databaseUrl,
+    connectionString,
   });
 
   return new PrismaClient({

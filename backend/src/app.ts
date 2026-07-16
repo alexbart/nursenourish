@@ -9,7 +9,12 @@ import { errorHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
 
-app.use(helmet());
+app.use(
+  helmet({
+    // Required for a cross-origin SPA (storefront) calling this API
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
