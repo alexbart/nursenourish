@@ -10,6 +10,7 @@
     "paths": {
       "@nursenourish/shared": ["../packages/shared/src"]
     },
+    "ignoreDeprecations": "6.0",
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
