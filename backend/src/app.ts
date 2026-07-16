@@ -14,7 +14,9 @@ app.use(helmet());
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   process.env.ADMIN_URL,
-].filter(Boolean) as string[];
+]
+  .filter(Boolean)
+  .map((origin) => origin!.replace(/\/+$/, ""));
 
 app.use(
   cors({
@@ -23,7 +25,8 @@ app.use(
         cb(null, true);
         return;
       }
-      if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      const normalized = origin.replace(/\/+$/, "");
+      if (allowedOrigins.length === 0 || allowedOrigins.includes(normalized)) {
         cb(null, true);
         return;
       }
