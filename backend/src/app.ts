@@ -12,9 +12,17 @@ const app = express();
 
 app.use(helmet());
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.ADMIN_URL,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: true,
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes(origin)) cb(null, true);
+      else cb(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );

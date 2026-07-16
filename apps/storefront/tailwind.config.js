@@ -4,23 +4,33 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#1E4D3D",
-        "primary-hover": "#163A2E",
-        secondary: "#7EA36E",
-        accent: "#D4A84F",
-        background: "#F8FAF8",
+        primary: {
+          DEFAULT: "#0066CC",
+          hover: "#0052A3",
+          light: "#E8F0FE",
+        },
+        secondary: {
+          DEFAULT: "#00A86B",
+          hover: "#008A57",
+          light: "#E6F7F1",
+        },
+        accent: "#FF6B35",
+        background: "#F5F7FA",
         surface: "#FFFFFF",
-        text: "#1F2937",
+        text: "#1A1A2E",
         muted: "#6B7280",
-        border: "#E5E7EB",
+        border: "#E2E8F0",
+        success: "#10B981",
+        warning: "#F59E0B",
+        danger: "#EF4444",
       },
       fontFamily: {
         heading: ["Poppins", "sans-serif"],
         body: ["Inter", "sans-serif"],
       },
-      borderRadius: {
-        xl: "16px",
-        "2xl": "20px",
+      boxShadow: {
+        card: "0 2px 8px rgba(0,0,0,0.08)",
+        "card-hover": "0 8px 24px rgba(0,0,0,0.12)",
       },
     },
   },

@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "seed": "tsx src/scripts/seed.ts",
-    "import:products": "tsx src/scripts/import-products.ts"
+    "import:products": "tsx src/scripts/import-products.ts",
+    "create:admin": "tsx src/scripts/create-admin.ts"
   },
   "keywords": [],
   "author": "",

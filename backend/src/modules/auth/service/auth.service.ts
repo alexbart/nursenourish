@@ -33,7 +33,7 @@ export class AuthService {
     const refreshToken = this.generateRefreshToken(user.id);
 
     return {
-      user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName },
+      user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role },
       accessToken,
       refreshToken,
     };
@@ -54,7 +54,7 @@ export class AuthService {
     const refreshToken = this.generateRefreshToken(user.id);
 
     return {
-      user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName },
+      user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role },
       accessToken,
       refreshToken,
     };

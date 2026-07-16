@@ -1,24 +1,19 @@
 import { twMerge } from "tailwind-merge";
 
 export function Skeleton({ className }: { className?: string }) {
-  return (
-    <div
-      className={twMerge(
-        "animate-pulse rounded-xl bg-secondary/20",
-        className
-      )}
-    />
-  );
+  return <div className={twMerge("animate-pulse rounded-lg bg-border", className)} />;
 }
 
 export function ProductCardSkeleton() {
   return (
-    <div className="bg-surface rounded-2xl overflow-hidden border border-border">
-      <Skeleton className="h-48 w-full" />
-      <div className="p-6 space-y-3">
-        <Skeleton className="h-5 w-3/4" />
-        <Skeleton className="h-4 w-1/2" />
-        <Skeleton className="h-6 w-1/4" />
+    <div className="bg-surface rounded-xl border border-border overflow-hidden">
+      <Skeleton className="aspect-square w-full rounded-none" />
+      <div className="p-3 space-y-2">
+        <Skeleton className="h-3 w-1/3" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-5 w-1/2 mt-1" />
+        <Skeleton className="h-8 w-full mt-2" />
       </div>
     </div>
   );
@@ -26,9 +21,9 @@ export function ProductCardSkeleton() {
 
 export function CategorySkeleton() {
   return (
-    <div className="bg-surface rounded-2xl p-6 text-center border border-border">
-      <Skeleton className="w-16 h-16 rounded-full mx-auto mb-4" />
-      <Skeleton className="h-5 w-2/3 mx-auto" />
+    <div className="bg-surface rounded-xl border border-border p-4 flex flex-col items-center gap-2">
+      <Skeleton className="w-10 h-10 rounded-full" />
+      <Skeleton className="h-4 w-2/3" />
     </div>
   );
 }

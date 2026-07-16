@@ -1,5 +1,12 @@
 {
-  "dependencies": {
-    "multer": "^2.2.0"
+  "name": "nursenourish",
+  "private": true,
+  "scripts": {
+    "dev:storefront": "cd apps/storefront && npm run dev",
+    "dev:admin": "cd apps/admin && npm run dev",
+    "dev:backend": "cd backend && npm run dev"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
   }
 }
