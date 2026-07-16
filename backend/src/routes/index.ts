@@ -11,13 +11,6 @@ import adminRoutes from "../modules/admin/admin.routes.js"
 
 const router = Router();
 
-router.get("/health", (_req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Nursenourish API is healthy",
-  });
-});
-
 // Aliases to avoid common pluralization/singular mismatches from the frontend
 router.use("/categories", categoryRoutes);
 router.use("/category", categoryRoutes);

@@ -2,7 +2,8 @@ import axios from "axios";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 
 export const api = axios.create({
-  baseURL: "/api/v1",
+  // Local: vite proxies /api → backend. Production: set VITE_API_URL to the API deploy URL.
+  baseURL: import.meta.env.VITE_API_URL || "/api/v1",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

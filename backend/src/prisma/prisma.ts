@@ -3,28 +3,43 @@ import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl || typeof databaseUrl !== "string") {
-  throw new Error("DATABASE_URL is not set (or not a string). Check your .env and prisma config.");
-}
-
-const adapter = new PrismaPg({
-  connectionString: databaseUrl,
-});
-
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    adapter,
-    log: ["query", "info", "warn", "error"],
+function createPrismaClient(): PrismaClient {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error(
+      "DATABASE_URL is not set. Add it in Vercel Project Settings → Environment Variables."
+    );
+  }
+
+  const adapter = new PrismaPg({
+    connectionString: databaseUrl,
   });
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
+  return new PrismaClient({
+    adapter,
+    log:
+      process.env.NODE_ENV === "production"
+        ? ["error", "warn"]
+        : ["query", "info", "warn", "error"],
+  });
 }
 
+function getPrisma(): PrismaClient {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient();
+  }
+  return globalForPrisma.prisma;
+}
 
+// Lazy proxy: client is created on first DB use, not at module import time
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, prop, receiver) {
+    const client = getPrisma();
+    const value = Reflect.get(client, prop, receiver);
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});
