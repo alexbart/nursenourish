@@ -27,18 +27,20 @@ export function AdminLayout() {
 
   const Sidebar = ({ mobile = false }) => (
     <aside className={`${mobile ? "w-full" : "w-60 hidden md:flex"} flex-col bg-sidebar text-white h-full`}>
-      {/* Logo */}
-      <div className="px-6 py-5 border-b border-white/10">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xs">NN</span>
-          </div>
-          <div>
-            <p className="font-semibold text-sm leading-none">NurseNourish</p>
-            <p className="text-white/50 text-xs mt-0.5">Admin Panel</p>
-          </div>
-        </div>
-      </div>
+       {/* Logo */}
+       <div className="px-6 py-5 border-b border-white/10">
+         <div className="flex items-center gap-2.5">
+           <img
+             src="/logo.jpg"
+             alt="NurseNourish"
+             className="h-8 w-auto rounded-lg bg-white/90 p-0.5 object-contain"
+           />
+           <div>
+             <p className="font-semibold text-sm leading-none">NurseNourish</p>
+             <p className="text-white/50 text-xs mt-0.5">Admin Panel</p>
+           </div>
+         </div>
+       </div>
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">

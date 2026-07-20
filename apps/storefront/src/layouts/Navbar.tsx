@@ -46,9 +46,11 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 shrink-0">
-          <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-white font-heading font-bold text-sm">NN</span>
-          </div>
+          <img
+            src="/logo.jpg"
+            alt="NurseNourish"
+            className="h-9 w-auto rounded-lg object-contain"
+          />
           <div className="hidden sm:block">
             <span className="font-heading font-bold text-primary text-lg leading-none block">NurseNourish</span>
             <span className="text-muted text-[10px] leading-none">Health & Wellness</span>

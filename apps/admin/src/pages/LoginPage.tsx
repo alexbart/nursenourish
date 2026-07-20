@@ -36,9 +36,11 @@ export function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-8">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold">NN</span>
-          </div>
+          <img
+            src="/logo.jpg"
+            alt="NurseNourish"
+            className="h-10 w-auto rounded-xl bg-primary/10 p-1 object-contain"
+          />
           <div>
             <h1 className="font-bold text-xl text-gray-900">NurseNourish</h1>
             <p className="text-sm text-gray-500">Admin Dashboard</p>
