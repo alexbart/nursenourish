@@ -15,11 +15,17 @@ function createPrismaClient(): PrismaClient {
     );
   }
 
-  // Hosted Postgres (Neon/Supabase/Vercel) usually requires TLS
-  const connectionString =
-    databaseUrl.includes("sslmode=") || databaseUrl.includes("localhost")
-      ? databaseUrl
-      : `${databaseUrl}${databaseUrl.includes("?") ? "&" : "?"}sslmode=require`;
+  // Hosted Postgres (Neon/Supabase/Vercel) requires TLS. pg v8 treats
+  // 'require' as 'verify-full', which fails against the Supabase pooler's
+  // self-signed chain, so we use 'no-verify' to skip CA verification.
+  let connectionString = databaseUrl;
+  if (databaseUrl.includes("localhost")) {
+    // local dev without TLS
+  } else if (!databaseUrl.includes("sslmode=")) {
+    connectionString = `${databaseUrl}${databaseUrl.includes("?") ? "&" : "?"}sslmode=no-verify`;
+  } else {
+    connectionString = databaseUrl.replace(/sslmode=(require|verify-ca|verify-full)/i, "sslmode=no-verify");
+  }
 
   const adapter = new PrismaPg({
     connectionString,
