@@ -16,6 +16,15 @@ export class AuthService {
       throw new ApiError(409, ErrorCodes.BAD_REQUEST, "Email already exists");
     }
 
+    if (data.phone) {
+      const existingPhone = await prisma.user.findFirst({
+        where: { phone: data.phone },
+      });
+      if (existingPhone) {
+        throw new ApiError(409, ErrorCodes.BAD_REQUEST, "Phone number already registered");
+      }
+    }
+
     const passwordHash = await bcrypt.hash(data.password, 10);
 
     const user = await prisma.user.create({

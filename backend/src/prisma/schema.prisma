@@ -125,7 +125,7 @@ model User {
   lastName  String
 
   email String  @unique
-  phone String? @unique
+  phone String?
 
   passwordHash String
 
