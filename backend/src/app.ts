@@ -89,8 +89,10 @@ if (process.env.NODE_ENV !== "production") {
   app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
 
-// Load API routes after health is registered (still eager, but Prisma is lazy)
-const { default: routes } = await import("./routes/index.js");
+// Load API routes after health is registered (still eager, but Prisma is lazy).
+// Static import (no top-level await) so the exported `app` is fully wired
+// before Vercel's serverless handler invokes it.
+import routes from "./routes/index.js";
 app.use("/api/v1", routes);
 
 app.use(notFoundMiddleware);
