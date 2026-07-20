@@ -32,32 +32,40 @@ async function seed() {
   const nnBrand = await prisma.brand.findUnique({ where: { slug: "nursenourish" } });
 
   if (vitaminCat && fitnessCat && nnBrand) {
-    const products = await prisma.product.createMany({
-      data: [
-        {
-          name: "Vitamin C 1000mg",
-          slug: "vitamin-c-1000mg",
-          sku: "NN-VITC-001",
-          description: "Immune support supplement",
-          price: 1200,
-          featured: true,
-          categoryId: vitaminCat.id,
-          brandId: nnBrand.id,
+    const vitaminProduct = await prisma.product.create({
+      data: {
+        name: "Vitamin C 1000mg",
+        slug: "vitamin-c-1000mg",
+        sku: "NN-VITC-001",
+        description: "Immune support supplement",
+        price: 1200,
+        featured: true,
+        categoryId: vitaminCat.id,
+        brandId: nnBrand.id,
+        images: {
+          create: { imageUrl: "/images/products/product-1.jpg" },
         },
-        {
-          name: "Whey Protein",
-          slug: "whey-protein",
-          sku: "NN-PROTEIN-001",
-          description: "Premium whey protein powder",
-          price: 2500,
-          featured: true,
-          categoryId: fitnessCat.id,
-          brandId: nnBrand.id,
-        },
-      ],
-      skipDuplicates: true,
+      },
+      include: { images: true },
     });
-    console.log(`Created ${products.count} products`);
+
+    const proteinProduct = await prisma.product.create({
+      data: {
+        name: "Whey Protein",
+        slug: "whey-protein",
+        sku: "NN-PROTEIN-001",
+        description: "Premium whey protein powder",
+        price: 2500,
+        featured: true,
+        categoryId: fitnessCat.id,
+        brandId: nnBrand.id,
+        images: {
+          create: { imageUrl: "/images/products/product-2.jpg" },
+        },
+      },
+      include: { images: true },
+    });
+    console.log(`Created ${2} products with images`);
   }
 
   console.log("Seed complete!");

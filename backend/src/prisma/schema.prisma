@@ -38,12 +38,16 @@ enum OrderStatus {
   DELIVERED
   CANCELLED
 }
-
 enum PaymentStatus {
   PENDING
   SUCCESS
   FAILED
   REFUNDED
+}
+
+enum DeliveryMethod {
+  PICKUP
+  DELIVERY
 }
 
 model Order {
@@ -59,6 +63,14 @@ model Order {
 
   shippingAddress String?
 
+  deliveryMethod DeliveryMethod @default(PICKUP)
+
+  deliveryFee Decimal @default(0) @db.Decimal(10, 2)
+
+  latitude Float?
+
+  longitude Float?
+
   user User @relation(fields: [userId], references: [id])
 
   items OrderItem[]
@@ -66,6 +78,7 @@ model Order {
   payment Payment?
 
   createdAt DateTime @default(now())
+
   updatedAt DateTime @updatedAt
 
   @@index([userId])

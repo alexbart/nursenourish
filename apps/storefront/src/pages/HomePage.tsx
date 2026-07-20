@@ -3,20 +3,37 @@ import { ShieldCheck, Truck, Clock, Award, ArrowRight, ChevronRight } from "luci
 import { useProducts, useCategories } from "@/hooks";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductCardSkeleton } from "@/components/skeleton/Skeleton";
+import {
+  PillIcon,
+  DumbbellIcon,
+  HeartIcon,
+  ShieldIcon,
+  BrainIcon,
+  BabyIcon,
+  LeafIcon,
+  StethoscopeIcon,
+  SparkleIcon,
+  BandageIcon,
+  EyeIcon,
+  ToothIcon,
+  HospitalIcon,
+} from "@/assets/icons";
 
-const CATEGORY_ICONS: Record<string, string> = {
-  default: "💊",
-  vitamins: "🌿",
-  supplements: "💪",
-  "baby-care": "👶",
-  skincare: "✨",
-  "heart-health": "❤️",
-  immunity: "🛡️",
-  "pain-relief": "🩹",
-  diabetes: "🩺",
-  "eye-care": "👁️",
-  dental: "🦷",
-  "first-aid": "🏥",
+type IconComponent = React.ComponentType<{ className?: string }>;
+
+const CATEGORY_ICONS: Record<string, IconComponent> = {
+  default: PillIcon,
+  vitamins: LeafIcon,
+  supplements: DumbbellIcon,
+  "baby-care": BabyIcon,
+  skincare: SparkleIcon,
+  "heart-health": HeartIcon,
+  immunity: ShieldIcon,
+  "pain-relief": BandageIcon,
+  diabetes: StethoscopeIcon,
+  "eye-care": EyeIcon,
+  dental: ToothIcon,
+  "first-aid": HospitalIcon,
 };
 
 const TRUST_BADGES = [
@@ -26,15 +43,15 @@ const TRUST_BADGES = [
   { icon: Award, label: "Licensed Pharmacy", sub: "PPB certified" },
 ];
 
-const HEALTH_GOALS = [
-  { icon: "💊", label: "Vitamins & Minerals", slug: "vitamins" },
-  { icon: "💪", label: "Sports Nutrition", slug: "sports-nutrition" },
-  { icon: "❤️", label: "Heart Health", slug: "heart-health" },
-  { icon: "🛡️", label: "Immunity Boost", slug: "immunity" },
-  { icon: "🧠", label: "Brain Health", slug: "brain-health" },
-  { icon: "👶", label: "Baby & Kids", slug: "baby-care" },
-  { icon: "🌿", label: "Herbal & Natural", slug: "herbal" },
-  { icon: "🩺", label: "Diabetes Care", slug: "diabetes" },
+const HEALTH_GOALS: { icon: IconComponent; label: string; slug: string }[] = [
+  { icon: PillIcon, label: "Vitamins & Minerals", slug: "vitamins" },
+  { icon: DumbbellIcon, label: "Sports Nutrition", slug: "sports-nutrition" },
+  { icon: HeartIcon, label: "Heart Health", slug: "heart-health" },
+  { icon: ShieldIcon, label: "Immunity Boost", slug: "immunity" },
+  { icon: BrainIcon, label: "Brain Health", slug: "brain-health" },
+  { icon: BabyIcon, label: "Baby & Kids", slug: "baby-care" },
+  { icon: LeafIcon, label: "Herbal & Natural", slug: "herbal" },
+  { icon: StethoscopeIcon, label: "Diabetes Care", slug: "diabetes" },
 ];
 
 export function HomePage() {
@@ -116,16 +133,19 @@ export function HomePage() {
             <h2 className="font-heading font-bold text-2xl text-text">Shop by Health Goal</h2>
           </div>
           <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
-            {HEALTH_GOALS.map((goal) => (
-              <Link
-                key={goal.slug}
-                to={`/shop?category=${goal.slug}`}
-                className="group flex flex-col items-center gap-2 p-3 bg-surface rounded-xl border border-border hover:border-primary hover:shadow-card transition-all text-center"
-              >
-                <span className="text-2xl">{goal.icon}</span>
-                <span className="text-xs font-medium text-text group-hover:text-primary leading-tight">{goal.label}</span>
-              </Link>
-            ))}
+            {HEALTH_GOALS.map((goal) => {
+              const Icon = goal.icon;
+              return (
+                <Link
+                  key={goal.slug}
+                  to={`/shop?category=${goal.slug}`}
+                  className="group flex flex-col items-center gap-2 p-3 bg-surface rounded-xl border border-border hover:border-primary hover:shadow-card transition-all text-center"
+                >
+                  <Icon className="w-6 h-6 text-primary" />
+                  <span className="text-xs font-medium text-text group-hover:text-primary leading-tight">{goal.label}</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -147,20 +167,21 @@ export function HomePage() {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {(categories as any[]).slice(0, 12).map((cat: any) => (
-                <Link
-                  key={cat.id}
-                  to={`/shop?category=${cat.slug}`}
-                  className="group flex flex-col items-center gap-3 p-4 bg-background rounded-xl border border-border hover:border-primary hover:bg-primary-light transition-all text-center"
-                >
-                  <span className="text-3xl">
-                    {CATEGORY_ICONS[cat.slug] || CATEGORY_ICONS.default}
-                  </span>
-                  <span className="text-sm font-medium text-text group-hover:text-primary leading-tight">
-                    {cat.name}
-                  </span>
-                </Link>
-              ))}
+              {(categories as any[]).slice(0, 12).map((cat: any) => {
+                const IconComponent = CATEGORY_ICONS[cat.slug] || CATEGORY_ICONS.default;
+                return (
+                  <Link
+                    key={cat.id}
+                    to={`/shop?category=${cat.slug}`}
+                    className="group flex flex-col items-center gap-3 p-4 bg-background rounded-xl border border-border hover:border-primary hover:bg-primary-light transition-all text-center"
+                  >
+                    <IconComponent className="w-8 h-8 text-primary" />
+                    <span className="text-sm font-medium text-text group-hover:text-primary leading-tight">
+                      {cat.name}
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>

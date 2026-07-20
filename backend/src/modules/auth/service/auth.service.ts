@@ -27,29 +27,58 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(data.password, 10);
 
+    const userCreateData: any = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      phone: data.phone ?? null,
+      passwordHash,
+      role: "CUSTOMER",
+    };
+
+    if (data.addressLine) {
+      userCreateData.addresses = {
+        create: {
+          label: "Default",
+          county: data.county ?? "",
+          city: data.city ?? "",
+          addressLine: data.addressLine,
+          isDefault: true,
+        },
+      };
+    }
+
     const user = await prisma.user.create({
-      data: {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        phone: data.phone ?? null,
-        passwordHash,
-        role: "CUSTOMER",
-      },
+      data: userCreateData,
+      include: { addresses: true },
     });
 
     const accessToken = this.generateAccessToken(user.id, user.role);
     const refreshToken = this.generateRefreshToken(user.id);
 
+    const defaultAddress = user.addresses.find((a) => a.isDefault) || user.addresses[0] || null;
+
     return {
       user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role },
       accessToken,
       refreshToken,
+      defaultAddress: defaultAddress
+        ? {
+            id: defaultAddress.id,
+            label: defaultAddress.label,
+            county: defaultAddress.county,
+            city: defaultAddress.city,
+            addressLine: defaultAddress.addressLine,
+          }
+        : null,
     };
   }
 
   async login(data: LoginInput) {
-    const user = await prisma.user.findUnique({ where: { email: data.email } });
+    const user = await prisma.user.findUnique({
+      where: { email: data.email },
+      include: { addresses: true },
+    });
     if (!user) {
       throw new ApiError(401, ErrorCodes.UNAUTHORIZED, "Invalid credentials");
     }
@@ -62,10 +91,22 @@ export class AuthService {
     const accessToken = this.generateAccessToken(user.id, user.role);
     const refreshToken = this.generateRefreshToken(user.id);
 
+    const addresses = await prisma.address.findMany({ where: { userId: user.id } });
+    const defaultAddress = addresses.find((a) => a.isDefault) || addresses[0] || null;
+
     return {
       user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role },
       accessToken,
       refreshToken,
+      defaultAddress: defaultAddress
+        ? {
+            id: defaultAddress.id,
+            label: defaultAddress.label,
+            county: defaultAddress.county,
+            city: defaultAddress.city,
+            addressLine: defaultAddress.addressLine,
+          }
+        : null,
     };
   }
 
@@ -82,6 +123,37 @@ export class AuthService {
     } catch {
       throw new ApiError(401, ErrorCodes.UNAUTHORIZED, "Invalid refresh token");
     }
+  }
+
+  async getProfile(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { addresses: true },
+    });
+
+    if (!user) {
+      throw new ApiError(404, ErrorCodes.RESOURCE_NOT_FOUND, "User not found");
+    }
+
+    const defaultAddress = user.addresses.find((a) => a.isDefault) || user.addresses[0] || null;
+
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: user.phone,
+      role: user.role,
+      defaultAddress: defaultAddress
+        ? {
+            id: defaultAddress.id,
+            label: defaultAddress.label,
+            county: defaultAddress.county,
+            city: defaultAddress.city,
+            addressLine: defaultAddress.addressLine,
+          }
+        : null,
+    };
   }
 
   private generateAccessToken(userId: string, role: string) {

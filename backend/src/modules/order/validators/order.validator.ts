@@ -8,6 +8,11 @@ export enum OrderStatus {
   CANCELLED = "CANCELLED",
 }
 
+export enum DeliveryMethod {
+  PICKUP = "PICKUP",
+  DELIVERY = "DELIVERY",
+}
+
 export interface OrderItem {
   productId: string;
   name: string;
@@ -18,6 +23,11 @@ export interface OrderItem {
 export interface CreateOrderDto {
   items: OrderItem[];
   subtotal: number;
+  shippingAddress?: string;
+  deliveryMethod: DeliveryMethod;
+  deliveryFee: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface OrderResponse {
@@ -26,5 +36,10 @@ export interface OrderResponse {
   subtotal: number;
   total: number;
   items: OrderItem[];
+  shippingAddress?: string;
+  deliveryMethod: DeliveryMethod;
+  deliveryFee: number;
+  latitude?: number;
+  longitude?: number;
   createdAt: string;
 }

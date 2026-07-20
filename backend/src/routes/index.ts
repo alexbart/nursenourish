@@ -8,6 +8,7 @@ import authRoutes from "../modules/auth/routes.js"
 import orderRoutes from "../modules/order/routes.js"
 import paymentRoutes from "../modules/payment/routes.js"
 import adminRoutes from "../modules/admin/admin.routes.js"
+import deliveryRoutes from "../modules/delivery/delivery.routes.js"
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.use("/stock-movements", stockMovementRoutes);
 router.use("/auth", authRoutes);
 router.use("/orders", orderRoutes);
 router.use("/payments", paymentRoutes);
+router.use("/delivery", deliveryRoutes);
 router.use("/admin", adminRoutes);
 
 export default router;

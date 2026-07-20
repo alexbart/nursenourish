@@ -4,4 +4,9 @@ export interface RegisterDto {
   email: string;
   phone?: string;
   password: string;
+  county?: string;
+  city?: string;
+  addressLine?: string;
+  latitude?: number;
+  longitude?: number;
 }

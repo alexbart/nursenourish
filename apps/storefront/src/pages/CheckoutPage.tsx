@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCartStore } from "@/features/cart/store/cart.store";
 import { useMutation } from "@tanstack/react-query";
@@ -5,11 +6,22 @@ import { createOrder } from "@/api/order";
 import { initializePayment } from "@/api/payment";
 import { useAuthStore } from "@/features/auth/store/auth.store";
 import { toast } from "react-hot-toast";
+import { DeliveryOption } from "@/features/delivery/components/DeliveryOption";
+import type { CreateOrderPayload } from "@/api/order";
 
 export function CheckoutPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
+  const defaultAddress = useAuthStore((state) => state.defaultAddress);
   const { items, subtotal, clearCart } = useCartStore();
+
+  const [deliveryData, setDeliveryData] = useState({
+    method: "PICKUP" as "PICKUP" | "DELIVERY",
+    fee: 0,
+    address: "",
+    latitude: undefined as number | undefined,
+    longitude: undefined as number | undefined,
+  });
 
   const orderMutation = useMutation({
     mutationFn: createOrder,
@@ -19,7 +31,7 @@ export function CheckoutPage() {
         paymentMutation.mutate({
           orderId: order.id,
           email: user?.email || "",
-          amount: subtotal(),
+          amount: subtotal() + deliveryData.fee,
         });
       }
     },
@@ -47,7 +59,7 @@ export function CheckoutPage() {
       return;
     }
 
-    orderMutation.mutate({
+    const payload: CreateOrderPayload = {
       items: items.map((i) => ({
         productId: i.productId,
         name: i.name,
@@ -55,6 +67,29 @@ export function CheckoutPage() {
         quantity: i.quantity,
       })),
       subtotal: subtotal(),
+      shippingAddress: deliveryData.address,
+      deliveryMethod: deliveryData.method,
+      deliveryFee: deliveryData.fee,
+      latitude: deliveryData.latitude,
+      longitude: deliveryData.longitude,
+    };
+
+    orderMutation.mutate(payload);
+  };
+
+  const handleDeliveryChange = (data: {
+    method: "PICKUP" | "DELIVERY";
+    fee: number;
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+  }) => {
+    setDeliveryData({
+      method: data.method,
+      fee: data.fee,
+      address: data.address || "",
+      latitude: data.latitude,
+      longitude: data.longitude,
     });
   };
 
@@ -67,6 +102,7 @@ export function CheckoutPage() {
   }
 
   const isLoading = orderMutation.isPending || paymentMutation.isPending;
+  const total = subtotal() + deliveryData.fee;
 
   return (
     <div className="min-h-screen bg-background py-12">
@@ -74,9 +110,15 @@ export function CheckoutPage() {
         <h1 className="font-heading font-bold text-4xl text-primary mb-8">Checkout</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <h2 className="font-heading font-semibold text-xl text-primary mb-4">Order Review</h2>
+          <div className="lg:col-span-2 space-y-6">
+            <DeliveryOption
+              subtotal={subtotal()}
+              onDeliveryChange={handleDeliveryChange}
+              defaultAddress={defaultAddress}
+            />
+
             <div className="bg-surface rounded-2xl border border-border p-6">
+              <h2 className="font-heading font-semibold text-xl text-primary mb-4">Order Review</h2>
               {items.map((item) => (
                 <div key={item.id} className="flex justify-between py-2 border-b border-border last:border-0">
                   <span>{item.name} × {item.quantity}</span>
@@ -95,13 +137,17 @@ export function CheckoutPage() {
                   <span className="font-semibold">KES {subtotal().toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted">Shipping</span>
-                  <span className="font-semibold">Calculated at payment</span>
+                  <span className="text-muted">Delivery</span>
+                  <span className="font-semibold">
+                    {deliveryData.method === "DELIVERY"
+                      ? `KES ${deliveryData.fee.toLocaleString()}`
+                      : "Free"}
+                  </span>
                 </div>
                 <div className="border-t border-border pt-3">
                   <div className="flex justify-between font-bold">
                     <span>Total</span>
-                    <span>KES {subtotal().toLocaleString()}</span>
+                    <span>KES {total.toLocaleString()}</span>
                   </div>
                 </div>
               </div>

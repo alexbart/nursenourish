@@ -98,7 +98,7 @@ export async function importCatalog(excelPath: string): Promise<ImportReport> {
             brandId: brand.id,
             categoryId,
             images: {
-              create: { imageUrl: "/images/products/placeholder.webp" },
+              create: { imageUrl: "/images/products/product-3.jpg" },
             },
           },
         });

@@ -165,7 +165,7 @@ export function ProductsPage() {
             <tr key={p.id} className="border-b border-gray-100 hover:bg-gray-50">
               <td className="px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <img src={p.images?.[0]?.imageUrl || "/placeholder.png"} alt={p.name} className="w-10 h-10 rounded-lg object-cover bg-gray-100" />
+                  <img src={p.images?.[0]?.imageUrl || "/hero.jpg"} alt={p.name} className="w-10 h-10 rounded-lg object-cover bg-gray-100" />
                   <div>
                     <p className="font-medium text-gray-900 text-sm line-clamp-1">{p.name}</p>
                     <p className="text-xs text-gray-500">{p.brand?.name}</p>

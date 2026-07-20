@@ -33,3 +33,14 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
   const result = await authService.refresh(refreshToken);
   res.status(HttpStatus.OK).json({ data: result });
 });
+
+export const me = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const result = await authService.getProfile(userId);
+  res.status(HttpStatus.OK).json({ data: result });
+});

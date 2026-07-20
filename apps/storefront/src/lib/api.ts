@@ -13,8 +13,6 @@ function resolveApiBaseUrl(): string {
 }
 
 export const api = axios.create({
-  // Local: vite proxies /api → backend. Production: set VITE_API_URL to the API deploy URL
-  // (with or without /api/v1 — both work).
   baseURL: resolveApiBaseUrl(),
   timeout: 10000,
   headers: {
@@ -22,7 +20,18 @@ export const api = axios.create({
   },
 });
 
-// Add auth token to requests
+let isRefreshing = false;
+let refreshSubscribers: Array<(token: string) => void> = [];
+
+function subscribeTokenRefresh(cb: (token: string) => void) {
+  refreshSubscribers.push(cb);
+}
+
+function onTokenRefreshed(token: string) {
+  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers = [];
+}
+
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken;
   if (token) {
@@ -30,3 +39,54 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve) => {
+          subscribeTokenRefresh((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            resolve(api(originalRequest));
+          });
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const refreshToken = useAuthStore.getState().refreshToken;
+
+      if (!refreshToken) {
+        useAuthStore.getState().logout();
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
+
+      try {
+        const response = await axios.post(
+          `${resolveApiBaseUrl()}/auth/refresh`,
+          { refreshToken }
+        );
+
+        const { accessToken } = response.data.data;
+        useAuthStore.getState().setAccessToken(accessToken);
+        onTokenRefreshed(accessToken);
+
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        useAuthStore.getState().logout();
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
